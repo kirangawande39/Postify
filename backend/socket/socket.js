@@ -1,15 +1,23 @@
 const onlineUsers = new Map();
 const lastSeen = new Map();
+const BOT_USER_ID=process.env.BOT_USER_ID;
 
-const initSocket = (io) => {
-  io.on("connection", (socket) => {
+const User = require('../models/User')
+
+const initSocket =  (io) => {
+  io.on("connection",  (socket) => {
 
 
     // Jab user online hota hai, uska socket.id ko userId se map karo
 
-    socket.on("user-online", (userId) => {
+    socket.on("user-online", async (userId) => {
       // console.log("User online call");
       // console.log(userId, socket.id);
+      await User.findByIdAndUpdate(userId,{
+        lastSeen:null
+      })
+      
+      onlineUsers.set(BOT_USER_ID,"socket_id")
       onlineUsers.set(userId, socket.id); // userId -> socketId
       io.emit("online-users", Array.from(onlineUsers.keys()));
     });
@@ -211,11 +219,15 @@ const initSocket = (io) => {
     });
 
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       for (let [userId, socketId] of onlineUsers.entries()) {
         if (socketId === socket.id) {
           onlineUsers.delete(userId); //here set user is offline
-          lastSeen.set(userId, new Date().toISOString()); //store last seen 
+          // lastSeen.set(userId, new Date().toISOString()); //store last seen
+          await User.findByIdAndUpdate(userId,{
+            lastSeen:new Date()
+          })
+
           io.emit("online-users", Array.from(onlineUsers.keys())); //send Updated list to all 
           break;
         }

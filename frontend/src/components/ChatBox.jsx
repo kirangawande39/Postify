@@ -8,8 +8,9 @@ import { IoVideocam } from "react-icons/io5"
 import { handleError } from '../utils/errorHandler';
 import { toast } from 'react-toastify';
 import Spinner from "./Spinner";
-import API from "../services/api";
+
 import { useCall } from "../context/CallContext";
+import { createOrFetchChat, sendMessage, fileChange, getChatMessages, markSeenChatMessages } from "../services/chatService";
 
 
 const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack }) => {
@@ -51,12 +52,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
       formData.append("image", file);
       formData.append("chatId", chatId);
 
-      const res = await API.post(`/api/messages/image`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      const res = await fileChange(formData)
 
       // console.log("image res :", res.data)
 
@@ -99,12 +95,11 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
   useEffect(() => {
 
     if (!selectedUser || !user) return;
-    const createOrFetchChat = async () => {
+    const hanldleCreateOrFetchChat = async () => {
       try {
-        const res = await API.post(
-          `/api/chats`,
-          { senderId: user.id, receiverId: selectedUser._id },
-        );
+
+        const res = await createOrFetchChat({ senderId: user.id, receiverId: selectedUser._id })
+
         // // console.log("ChatId :",res.data)
         setChatId(res.data._id);
 
@@ -116,7 +111,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
       }
     };
 
-    createOrFetchChat();
+    hanldleCreateOrFetchChat();
   }, [selectedUser, user]);
 
 
@@ -127,13 +122,15 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
     fetchMessages(1);
   }, [chatId]);
 
+ 
+
   const fetchMessages = async (pageNumber) => {
     try {
       setLoading(true);
-      const res = await API.get(
-        `/api/messages/${chatId}?page=${pageNumber}&limit=20`,
-      );
 
+      const res = await getChatMessages(chatId, pageNumber)
+
+      // console.log("chat Messages:", res.data)
       if (res.data.lenght === 0) {
         setHasMore(false);
         return;
@@ -165,20 +162,24 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
   const hasMarkedSeen = useRef(false);
 
   useEffect(() => {
-    if (!chatId || !user?.id || hasMarkedSeen.current) return;
+    const updateMarkSeen = async () => {
+      if (!chatId || !user?.id || hasMarkedSeen.current) return;
 
-    const unseen = messages.some(
-      (msg) => msg.sender._id !== user.id && !msg.seen
-    );
+      const unseen = messages.some(
+        (msg) => msg.sender._id !== user.id && !msg.seen
+      );
 
-    if (!unseen) return;
+      if (!unseen) return;
 
-    hasMarkedSeen.current = true;
+      hasMarkedSeen.current = true;
 
-    API.put(`/api/messages/seen/${chatId}`, {}).catch(console.error);
 
-    socket.emit("mark-seen", { chatId, userId: user.id });
+      await markSeenChatMessages(chatId);
 
+      socket.emit("mark-seen", { chatId, userId: user.id });
+    }
+
+    updateMarkSeen();
   }, [chatId, messages]);
 
 
@@ -251,12 +252,10 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
     if (!newMessage.trim() || !chatId) return;
     const receiverId = selectedUser._id;
     try {
-      const res = await API.post(
-        `/api/messages`,
-        { chatId, receiverId, text: newMessage },
-      );
 
-      console.log("msg res :", res.data)
+      const res = await sendMessage({ chatId, receiverId, text: newMessage })
+
+      // console.log("msg res :", res.data)
 
       const sentMessage = {
         ...res.data,
@@ -300,10 +299,8 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
   const handleDeleteMessage = async (msgId) => {
     try {
-      const res = await API.delete(
-        `/api/messages/${msgId}`,
 
-      );
+      const res = await deleteMessage(msgId)
 
       // alert(res.data.message);
       setMessages((prev) => prev.filter((msg) => msg._id !== msgId));
@@ -408,7 +405,6 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
     setIsSwiping(false);
   };
 
-
   if (!user || !selectedUser) {
     return <div>Please select a user to start chat</div>;
   }
@@ -431,24 +427,26 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
           </div>
           {/* <p>lastMessage::{lastMessage}</p> */}
           <img
-            src={selectedUser.profilePic.url || "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"}
+            src={selectedUser.profilePic?.url || "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"}
             alt="Profile"
             className="rounded-circle me-2"
             style={{ width: "40px", height: "40px", objectFit: "cover" }}
           />
           <strong>{selectedUser.username}</strong>
         </div>
+        {"684f268c7dad0bf1b1dfd4f8" !== selectedUser._id &&
+          <button
+            className="text-green-500 hover:text-green-700 text-6xl opacity-50 cursor-not-allowed"
+            onClick={() => {
+              // toast.warning("Video calling feature is currently disabled");
+              // return;
+              startOutgoingCall(selectedUser?._id);
+            }}
+          >
+            <IoVideocam />
+          </button>
+        }
 
-        <button
-          className="text-green-500 hover:text-green-700 text-6xl opacity-50 cursor-not-allowed"
-          onClick={() => {
-            // toast.warning("Video calling feature is currently disabled");
-            // return;
-            startOutgoingCall(selectedUser?._id);
-          }}
-        >
-          <IoVideocam />
-        </button>
         <span className={`badge ${selectedUser?._id === "684f268c7dad0bf1b1dfd4f8" || isSelectedUserOnline ? "bg-success" : "bg-secondary"}`}>
           {selectedUser?._id === "684f268c7dad0bf1b1dfd4f8"
             ? "Online"

@@ -10,8 +10,14 @@ import { handleError } from '../utils/errorHandler';
 import { toast } from 'react-toastify';
 import "../assets/css/StoryList.css";
 import StoryViewer from "../components/StoryViewer"
-import API from "../services/api";
+
+import { getSuggestion } from '../services/userService'
+import { sendFollow, sendUnfollow, getPostsData } from "../services/postService";
+import { getStorys, markSeen , likeStory , unLikeStory} from "../services/storyService";
+
+import LoadingDots from "../components/common/LoadingDots";
 const isVideo = (url) => url?.match(/\.(mp4|webm|ogg)$/i);
+
 
 const Home = () => {
   const { user, updateUser } = useContext(AuthContext);
@@ -71,7 +77,9 @@ const Home = () => {
   useEffect(() => {
     const fetchSuggestions = async () => {
       try {
-        const res = await API.get(`/api/users/suggestions`);
+
+        const res = await getSuggestion();
+      
         setSuggestions(res.data);
       } catch (err) {
         console.error("Error fetching suggestions:", err);
@@ -95,12 +103,8 @@ const Home = () => {
 
   const handleFollow = async (userId) => {
     try {
-      
-      await API.post(
-        `/api/follow/${userId}/follow`,
-        {},
-       
-      );
+
+      await sendFollow(userId)
       setSuggestions((prev) =>
         prev.map((user) =>
           user._id === userId ? { ...user, isFollowing: true } : user
@@ -113,10 +117,7 @@ const Home = () => {
 
   const handleUnfollow = async (userId) => {
     try {
-      await API.post(
-        `/api/follow/${userId}/unfollow`,
-        {},
-      );
+      await sendUnfollow(userId)
       setSuggestions((prev) =>
         prev.map((user) =>
           user._id === userId ? { ...user, isFollowing: false } : user
@@ -133,7 +134,6 @@ const Home = () => {
       return;
     }
     fetchPostData();
-    fetchStories();
   }, [user]);
 
   useEffect(() => {
@@ -152,7 +152,7 @@ const Home = () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const res = await API.get(`/api/posts?page=${page}&limit=5`);
+      const res = await getPostsData(page)
       const newPosts = res.data.posts;
       if (newPosts.length === 0) {
         setHasMore(false);
@@ -168,16 +168,17 @@ const Home = () => {
     }
   };
 
-  const fetchStories = async () => {
-    try {
+  useEffect(()=>{
+    fetchStories()
     
-      
-
-      const res = await API.get(`/api/stories`);
-
-      setStories(res.data.stories);
+    },[])
+    
+    const fetchStories = async () => {
+      try {
+        const res =await getStorys();
+        setStories(res.data.stories);
     } catch (err) {
-      handleError(err);
+      handleError(err)
     }
   };
 
@@ -326,16 +327,14 @@ const Home = () => {
 
     const markAsSeen = async () => {
       try {
-        await API.put(
-          `/api/stories/${currentStory._id}/seen`,
-          {},
-        );
+
+        await markSeen(currentStory._id)
         setSeenStories((prev) => new Set(prev).add(currentStory._id));
       } catch (err) {
         console.error("Error marking story as seen:", err);
       }
     };
-  
+
     markAsSeen();
   }, [currentStory]);
 
@@ -414,22 +413,17 @@ const Home = () => {
 
     try {
       if (likedMap[currentStory._id]) {
-        await API.put(
-          `/api/stories/${currentStory._id}/unlike`,
-          {},
-        );
+        await unLikeStory(currentStory._id)
         setLikedMap((prev) => ({ ...prev, [currentStory._id]: false }));
       } else {
-        await API.put(
-          `api/stories/${currentStory._id}/like`,
-          {},
-        );
+        await likeStory(currentStory._id)
         setLikedMap((prev) => ({ ...prev, [currentStory._id]: true }));
       }
     } catch (error) {
       console.error("Error liking/unliking story:", error);
     }
   };
+
 
   const handleStoryShare = (e) => {
     e.stopPropagation();
@@ -461,10 +455,6 @@ const Home = () => {
         (typeof entry.user === 'object' ? entry.user._id : entry.user) === currentUserId
       )
     );
-
-
-
-
 
 
   if (!user) {
@@ -543,7 +533,7 @@ const Home = () => {
         setShowViewers={setShowViewers}
       />
 
-      
+
 
       <div className="vibenet-main">
         <div className="vibenet-feed">

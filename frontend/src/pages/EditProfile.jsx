@@ -5,8 +5,8 @@ import { toast } from "react-toastify";
 import { FaEdit, FaSave, FaTimes, FaCamera, FaPlus, FaCog } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import { handleError } from "../utils/errorHandler";
-import API from "../services/api";
 import LoadingDots from "../components/common/LoadingDots";
+import { updateBioAndName, uploadProfilePic } from '../services/userService'
 
 const EditProfile = () => {
   const { updateUser } = useContext(AuthContext);
@@ -36,9 +36,9 @@ const EditProfile = () => {
 
   const handleBioNameSave = async () => {
     try {
-      const res = await API.put(`/api/users/${user._id}`,
-        { name, bio },
-      );
+      const userId = user?._id;
+
+      const res = await updateBioAndName(userId, { name, bio })
 
       // console.log("response::", res.data);
 
@@ -53,6 +53,8 @@ const EditProfile = () => {
       handleError(err);
     }
   };
+
+
 
   const handleProfilePicUpload = async (e) => {
     const file = e.target.files[0];
@@ -75,13 +77,9 @@ const EditProfile = () => {
 
 
       setProfileUploadStatus(true);
-      const res = await API.put(`/api/users/${user._id}/uploadProfilePic`,
-        formData
-      );
+      const userId = user?._id;
 
-
-
-
+      const res = await uploadProfilePic(userId, formData)
 
       const updatedUser = { ...user, profilePic: res.data.profilePic };
       setProfileUploadStatus(false)
@@ -126,7 +124,7 @@ const EditProfile = () => {
                 <span className={`${profileUploadStatus ? 'absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm animate-pulse whitespace-nowrap'
                   :
                   'hidden'} `}>
-                  {profileUploadStatus && (<LoadingDots text="Uploading"/>)}
+                  {profileUploadStatus && (<LoadingDots text="Uploading" />)}
                 </span>
               </div>
 

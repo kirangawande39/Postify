@@ -1,9 +1,10 @@
 const express = require("express");
-const { register, login,logout, checkEmail, forgotPassword, resetPassword, googleCallBack ,check,sendOtp , verifyOtp } = require("../controllers/authController");
+const { register, login, logout, checkEmail, forgotPassword, resetPassword, googleCallBack, check, sendOtp, verifyOtp } = require("../controllers/authController");
 const { registerLimiter, loginLimiter, forgotPasswordLimiter } = require("../middlewares/rateLimit");
 const passport = require("passport");
 const { protect } = require("../middlewares/authMiddleware");
-
+const validate = require('../middlewares/validate')
+const { registerSchema, loginSchema , emailSchema  , resetPasswordSchema , verifyOTPSchema } = require('../validations/authValidation')
 
 require("dotenv").config();
 const router = express.Router();
@@ -38,11 +39,12 @@ const router = express.Router();
 // });
 
 
-router.get('/check',protect, check)
+router.get('/check', protect, check)
 
-router.post("/register", registerLimiter, register);
+router.post("/register", registerLimiter, validate(registerSchema), register);
 
 router.post("/logout", protect, logout);
+
 router.post("/login", loginLimiter, (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) return next(err);
@@ -55,22 +57,20 @@ router.post("/login", loginLimiter, (req, res, next) => {
     }
 
     // console.log(user)
-    req.user=user;
+    req.user = user;
     next();
   })(req, res, next);
-}, login); 
+}, login);
 
 
 
 
 // POST /api/auth/check-email
-router.post("/check-email", checkEmail);
+router.post("/check-email", validate(emailSchema), checkEmail);
 
-router.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
+router.post("/forgot-password",validate(emailSchema) ,  forgotPasswordLimiter, forgotPassword);
 
-router.post("/reset-password", resetPassword);
-
-
+router.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 
 router.get("/google",
   passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -85,7 +85,7 @@ router.get(
 );
 
 
-router.post("/send-otp", sendOtp)
-router.post("/verify-otp", verifyOtp)
+router.post("/send-otp", validate(emailSchema),sendOtp)
+router.post("/verify-otp",validate(verifyOTPSchema), verifyOtp)
 
 module.exports = router;

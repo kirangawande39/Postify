@@ -9,8 +9,8 @@ import CommentBox from "./CommentBox";
 import { handleError } from '../utils/errorHandler';
 dayjs.extend(relativeTime);
 import { Link } from "react-router-dom";
-import API from "../services/api";
 import { toast } from "react-toastify";
+import { sendLike , sendUnlike , sendFollow , sendUnfollow } from "../services/postService";
 
 const PostCard = ({ post, storyUserIds, openStory }) => {
   const [liked, setLiked] = useState(false);
@@ -65,10 +65,8 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
 
   const handleLike = async () => {
     try {
-      const res = await API.post(
-        `/api/likes/${post._id}/like`,
-        {},
-      );
+   
+      const res = await sendLike(post._id)
       setTotalLikes(res.data.totalLikes);
     } catch (err) {
       console.error("failed post like", err);
@@ -78,11 +76,7 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
 
   const handleUnlike = async () => {
     try {
-      const res = await API.post(
-        `/api/likes/${post._id}/unlike`,
-        {},
-
-      );
+    const res = await sendUnlike(post._id)
       setTotalLikes(res.data.totalLikes);
     } catch (err) {
       console.error("failed post unLike", err);
@@ -95,10 +89,8 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
 
   const handleFollow = async () => {
     try {
-      const res = await API.post(
-        `/api/follow/${post.user._id}/follow`,
-        {},
-      );
+     
+      const res = await sendFollow(post.user._id)
       setIsFollowing(true);
       toast.success(res.data.message || "Followed successfully!");
     } catch (err) {
@@ -108,11 +100,8 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
 
   const handleUnfollow = async () => {
     try {
-      const res = await API.post(
-        `/api/follow/${post.user._id}/unfollow`,
-        {},
-
-      );
+    
+      const res = await sendUnfollow(post.user._id)
       setIsFollowing(false);
       toast.success(res.data.message || "Unfollowed successfully!");
     } catch (err) {
@@ -208,15 +197,16 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
           </h3>
           <h3
             onClick={handleComment}
-            style={{ color: showComment ? "#007bff" : "black" }}
+          
+            style={{ color: showComment ? "#007bff" : "black" , cursor:'pointer' }}
           >
             <LiaCommentSolid />
           </h3>
         </div>
         <br />
         <div className="d-flex justify-content-between text-muted">
-          <span className="">❤️ {totalLikes || 0} Likes</span>
-          <span>💬 {post.comments?.length || 0} Comments</span>
+          <span className="font-bold text-black">❤️ {totalLikes || 0} Likes</span>
+          <span className="text-black font-bold">💬 {post.comments?.length || 0} Comments</span>
         </div>
         <p className="mb-1">
           <strong>{post.user?.username || "Unknown"}</strong>{" "}

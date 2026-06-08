@@ -10,6 +10,8 @@ export const OnlineProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const [allOnlineUsers, setAllOnlineUsers] = useState([]);
 
+  // console.log("allOnlineUsers from  onlineUserContext:", allOnlineUsers );
+
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   // console.log("user",user.id)

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { handleError } from "../utils/errorHandler";
 import { toast } from "react-toastify";
-import API from "../services/api";
+import { addGroupMembers, deleteGroupMembers } from "../services/groupService";
 
-const GroupActionsModal = ({ onClose, sortedFollowers, group, user }) => {
+const GroupActionsModal = ({ onClose, sortedSidebarChats, group, user }) => {
   const [showFriendList, setShowFriendList] = useState(false);
 
   const groupId = group._id;
@@ -23,14 +23,9 @@ const GroupActionsModal = ({ onClose, sortedFollowers, group, user }) => {
 
   const handleAddMembers = async () => {
     try {
-      // console.log("selectedMembers::",selectedMembers)
-      let res = await API.post(`/api/groups/add-members`,
-        {
-          groupId,
-          members: selectedMembers
-        },
-       
-      )
+
+
+      const res = await addGroupMembers({ groupId, members: selectedMembers })
 
       toast.success(res.data.message)
 
@@ -42,9 +37,9 @@ const GroupActionsModal = ({ onClose, sortedFollowers, group, user }) => {
 
   const handleDeleteGroup = async (groupId) => {
     try {
-       let res=await API.delete(`/api/groups/delete-group/${groupId}`)
+      const res = await deleteGroupMembers(groupId)
 
-       toast.success(res.data.message)
+      toast.success(res.data.message)
     }
     catch (err) {
       handleError(err)
@@ -63,10 +58,10 @@ const GroupActionsModal = ({ onClose, sortedFollowers, group, user }) => {
             Add Friends
           </button>
 
-          <button onClick={()=>handleDeleteGroup(groupId)} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600">
+          <button onClick={() => handleDeleteGroup(groupId)} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-600">
             Delete Group
           </button>
-      
+
 
           <button
             onClick={onClose}
@@ -97,7 +92,7 @@ const GroupActionsModal = ({ onClose, sortedFollowers, group, user }) => {
 
             <div className="flex flex-col gap-4 max-h-72 overflow-y-auto">
 
-              {sortedFollowers.map((follower) => (
+              {sortedSidebarChats.map((follower) => (
                 <label
                   key={follower._id}
                   className=" gap-4 p-2 rounded-lg hover:bg-gray-100 cursor-pointer"

@@ -1,13 +1,14 @@
 import React from "react";
 import { FaTimes } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
-import API from "../services/api";
+import { followDecline, followAccept } from "../services/followService";
 
-const FollowRequestModel = ({ onClose, profileData,  setProfileData, setFollowRequest }) => {
+const FollowRequestModel = ({ onClose, profileData, setProfileData, setFollowRequest }) => {
 
   const handleDecline = async (declineuserId) => {
     try {
-      const res = await API.delete(`/api/follow/follow-request/decline/${declineuserId}`)
+
+      const res = await followDecline(declineuserId)
 
       toast.success(res.data.message)
 
@@ -28,11 +29,7 @@ const FollowRequestModel = ({ onClose, profileData,  setProfileData, setFollowRe
 
   const handleAccept = async (acceptUserId) => {
     try {
-      const res = await API.put(`/api/follow/follow-request/accept/${acceptUserId}`,
-        {},
-       
-      );
-
+      const res = await followAccept(acceptUserId)
       toast.success(res.data.message)
 
       setProfileData(prev => ({

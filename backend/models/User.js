@@ -50,16 +50,24 @@ const UserSchema = new mongoose.Schema(
     ]
     ,
 
-    groups:[
+    groups: [
       {
-        type: mongoose.Schema.Types.ObjectId, ref:"Group"
+        type: mongoose.Schema.Types.ObjectId, ref: "Group"
       }
-    ]
+    ],
+    
+    lastSeen:{
+      type:Date,
+      default:null
+    }
 
   },
   { timestamps: true }
 );
 
+
+UserSchema.index({ username: 1 });
+UserSchema.index({ name: 1 })
 // Plugin for password hashing & local auth
 UserSchema.plugin(passportLocalMongoose, { usernameField: "email" });
 

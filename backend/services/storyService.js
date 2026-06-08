@@ -22,6 +22,7 @@ const createStoryService = async (req) => {
     mediaType: file.mimetype.startsWith("video") ? "video" : "image",
     publicId: file.filename,
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    // expiresAt: new Date(Date.now() + 2 * 60 * 1000)
   });
 
   return story; 
@@ -29,9 +30,11 @@ const createStoryService = async (req) => {
 
 // 👉 Get Stories
 const getStoriesService = async (userId) => {
+  // console.log("getStoriesService called")
+
   const stories = await Story.find()
-    .populate("user")
-    .populate("seenBy.user", "username name profilePic");
+  .populate("user","username name profilePic")
+  .populate("seenBy.user", "username name profilePic");
 
   const unseenStories = [];
   const seenStories = [];
@@ -50,6 +53,9 @@ const getStoriesService = async (userId) => {
 
   unseenStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   seenStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  // console.log("unseenStories",unseenStories)
+  // console.log("seenStories",seenStories)
 
   return [...unseenStories, ...seenStories];
 };

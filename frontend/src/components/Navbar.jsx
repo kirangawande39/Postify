@@ -14,8 +14,10 @@ import {
 import { useLocation } from "react-router-dom";
 import "../assets/css/Navbar.css";
 import { ToastContainer, toast, Slide } from "react-toastify";
-import API from "../services/api";
 import { handleError } from "../utils/errorHandler";
+import { logoutUser } from "../services/authService";
+import { userPrivacy } from "../services/userService";
+
 const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -39,9 +41,8 @@ const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
   const handleLogout = async () => {
 
     try {
-      const res = await API.post(`/api/auth/logout`,
-        {},
-      )
+      const res = await logoutUser();
+     
       toast.success(res.data.message);
       logout();
       navigate("/");
@@ -69,9 +70,7 @@ const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
       const newStatus = !isPrivate;
       setIsPrivate(newStatus);
 
-      const res = await API.put(`/api/users/privacy`,
-        { isPrivate: newStatus },
-      );
+      const res = await userPrivacy({ isPrivate: newStatus })
 
       toast.success(res.data.message)
       setIsPrivate(res.data.isPrivate)

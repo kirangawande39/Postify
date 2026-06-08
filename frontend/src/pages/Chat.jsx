@@ -3,27 +3,27 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import ChatBox from "../components/ChatBox";
 import { AuthContext } from "../context/AuthContext";
 import Spinner from "../components/Spinner";
+import LoadingDots from "../components/common/LoadingDots"
 import { useParams } from "react-router-dom";
 import { handleError } from "../utils/errorHandler";
 import { useOnline } from "../context/OnlineStatusContext";
 import "../assets/css/Chat.css";
 import { toast } from "react-toastify";
 import GroupChat from "../components/GroupChat";
-import API from "../services/api";
+import { groupFormData , getGroupData} from "../services/groupService";
+import { sidebarChatData } from "../services/chatService";
+
 
 const Chat = () => {
   const { user, updateUser } = useContext(AuthContext);
   const { allOnlineUsers } = useOnline();
 
-  const [localUser, setLocalUser] = useState();
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
 
   const [messages, setMessages] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [chats, setChats] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState(allOnlineUsers || []);
-  const [lastSeen, setLastSeen] = useState({});
   const [loading, setLoading] = useState(true);
   const [statusLoading, setStatusLoading] = useState(false);
 
@@ -37,6 +37,8 @@ const Chat = () => {
     privacy: "public",
   });
 
+  const [sidebarChats, setSidebarChats] = useState([]);
+
   const [groupImage, setGroupImage] = useState()
 
   const [groupsData, setGroupsData] = useState([]);
@@ -44,6 +46,9 @@ const Chat = () => {
   const { id } = useParams();
 
   const CHATBOT_ID = "684f268c7dad0bf1b1dfd4f8";
+  // const CHATBOT_ID = "684db4e39d76770c4d55dd7b";
+
+  // console.log("Sidebar data:", sidebarChats)
 
   // Dummy messages for demo
   const dummyMessages = {
@@ -53,9 +58,8 @@ const Chat = () => {
     ],
   };
 
-  // Followers sorting logic
-  const sortedFollowers = useMemo(() => {
-    return [...(localUser?.followers || [])].sort((a, b) => {
+  const sortedSidebarChats = useMemo(() => {
+    return [...sidebarChats].sort((a, b) => {
       const isAChatBot = a._id === CHATBOT_ID;
       const isBChatBot = b._id === CHATBOT_ID;
 
@@ -68,39 +72,34 @@ const Chat = () => {
       if (isAOnline && !isBOnline) return -1;
       if (!isAOnline && isBOnline) return 1;
 
-      const aLast = new Date(lastSeen[a._id] || 0).getTime();
-      const bLast = new Date(lastSeen[b._id] || 0).getTime();
-
-      return bLast - aLast;
+      return new Date(b.lastSeen || 0) - new Date(a.lastSeen || 0);
     });
-  }, [localUser?.followers, onlineUsers, lastSeen]);
+  }, [sidebarChats, onlineUsers]);
+
+
 
   // Update last message
   const handleLastMessageUpdate = (newMessage) => {
-    if (selectedUser) {
-      updateLastMessage(selectedUser._id, newMessage);
-    }
-  };
+    if (!selectedUser) return;
 
-  const updateLastMessage = (chatId, newMessage) => {
-    setChats((prev) =>
-      prev.some((chat) => chat._id === chatId)
-        ? prev.map((chat) =>
-          chat._id === chatId ? { ...chat, lastMessage: newMessage } : chat
-        )
-        : [...prev, { _id: chatId, lastMessage: newMessage }]
+    setSidebarChats((prev) =>
+      prev.map((chat) =>
+        chat._id === selectedUser._id
+          ? { ...chat, lastMessage: newMessage }
+          : chat
+      )
     );
   };
 
 
-  let chatMap = useMemo(() => {
-    const map = {};
+  // let chatMap = useMemo(() => {
+  //   const map = {};
 
-    chats.forEach((chat) => {
-      map[chat._id] = chat;
-    })
-    return map;
-  }, [chats])
+  //   chats.forEach((chat) => {
+  //     map[chat._id] = chat;
+  //   })
+  //   return map;
+  // }, [chats])
 
   // Window resize
   useEffect(() => {
@@ -113,7 +112,7 @@ const Chat = () => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const res = await API.get(`/api/groups`);
+        const res = await getGroupData();
         setGroupsData(res.data.groups);
       } catch (err) {
         console.error("Failed fetch groups", err);
@@ -123,42 +122,64 @@ const Chat = () => {
   }, []);
 
   // Fetch user
-  const fetchUserData = async () => {
-    setLoading(true);
+  // const fetchUserData = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const res = await API.get(`/api/users/${id ? id : user.id}`);
+  //     setLocalUser(res.data.user);
+  //     updateUser(res.data.user);
+  //   } catch (err) {
+  //     handleError(err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+  const fetchSideChatsData = async () => {
     try {
-      const res = await API.get(`/api/users/${id ? id : user.id}`);
-      setLocalUser(res.data.user);
-      updateUser(res.data.user);
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setLoading(false);
+      setLoading(true)
+      const res = await sidebarChatData();
+      setSidebarChats(res.data)
     }
-  };
+    catch (err) {
+      handleError(err);
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+
 
   useEffect(() => {
-    fetchUserData();
+
+    // fetchUserData();
+    fetchSideChatsData();
   }, []);
+
+
+
+
 
   // Fetch online status
-  useEffect(() => {
-    const fetchOnlineStatus = async () => {
-      try {
-        const res = await API.get(`/api/online-status`);
+  // useEffect(() => {
+  //   const fetchOnlineStatus = async () => {
+  //     try {
+  //       const res = await API.get(`/api/online-status`);
 
-        // console.log("Online Status::", res.data);
-        setLastSeen(res.data.lastSeen || {});
-        setOnlineUsers(res.data.onlineUsers || allOnlineUsers || []);
-      } catch (err) {
-        console.error("online status error:", err);
-      } finally {
-        setStatusLoading(false);
-      }
-    };
-    fetchOnlineStatus();
-    const interval = setInterval(fetchOnlineStatus, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  //       // console.log("Online Status::", res.data);
+  //       setLastSeen(res.data.lastSeen || {});
+  //       setOnlineUsers(res.data.onlineUsers || allOnlineUsers || []);
+  //     } catch (err) {
+  //       console.error("online status error:", err);
+  //     } finally {
+  //       setStatusLoading(false);
+  //     }
+  //   };
+  //   fetchOnlineStatus();
+  //   const interval = setInterval(fetchOnlineStatus, 10000);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const handleSendMessage = (newMessage) => {
     if (selectedUser) {
@@ -212,15 +233,9 @@ const Chat = () => {
 
     try {
       setGroupCreateStatus(true);
-      const res = await API.post(
-        `/api/groups`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+    
+      const res = await groupFormData(formData)
+
       setGroupCreateStatus(false)
       toast.success(res.data.message);
 
@@ -231,27 +246,32 @@ const Chat = () => {
         privacy: "public",
       });
 
-      
+
 
     } catch (err) {
       handleError(err);
     }
   };
-
-
   const formatLastSeen = (timestamp) => {
     if (!timestamp) return "Offline";
+
     const diff = Date.now() - new Date(timestamp).getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return "just now";
-    if (minutes < 5) return "a few moments ago";
-    if (minutes < 60) return `${minutes} min ago`;
+
+    const minutes = Math.floor(diff / (1000 * 60));
+
+    if (minutes < 60) return `${minutes}m ago`;
+
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    if (hours < 24) return `${hours}h ago`;
+
     const days = Math.floor(hours / 24);
-    if (days === 1) return "yesterday";
-    if (days <= 3) return `${days} days ago`;
-    return "a while ago";
+    if (days < 30) return `${days}d ago`;
+
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}mo ago`;
+
+    const years = Math.floor(months / 12);
+    return `${years}y ago`;
   };
 
   if (loading || statusLoading) {
@@ -265,10 +285,10 @@ const Chat = () => {
   return (
     <div className="container chat-app mt-4">
 
-    
+
       <div className="row gx-0">
 
-        <div className={`col-md-4 border-end ${isMobile && (selectedUser || selectedGroup) ? "d-none" : ""}`} style={{ maxHeight: "78vh", overflowY: "auto" }}>
+        <div className={`col-md-4 border-end ${isMobile && (selectedUser || selectedGroup) ? "d-none" : ""}`} style={{ maxHeight: "90vh", overflowY: "auto" }}>
 
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5 className="px-3 mt-2 text-secondary">Groups</h5>
@@ -307,62 +327,74 @@ const Chat = () => {
           {/* FOLLOWERS LIST */}
           <h5 className="px-3 mt-4 text-secondary">Chats</h5>
           <div className="list-group list-group-flush">
-            {localUser && localUser.followers?.length > 0 ? (
-              sortedFollowers.map((follower, index) => {
-                const isOnline = onlineUsers.includes(follower._id);
-                const lastSeenTime = lastSeen[follower._id];
-
-                // const chatData = chats.find((c) => c._id === follower._id);
-
-
-
-                const chatData = chatMap[follower._id]
-
-
-
-
-
-                const lastMsg = chatData?.lastMessage;
+            {sidebarChats?.length > 0 ? (
+              sortedSidebarChats.map((chat, index) => {
+                const isOnline = onlineUsers.includes(chat._id);
 
                 return (
                   <button
-                    key={follower._id || index}
-                    className={`list-group-item list-group-item-action d-flex align-items-center ${selectedUser && follower._id === selectedUser._id ? "active" : ""}`}
-                    onClick={() => handleUserSelect(follower)}
+                    key={chat._id || index}
+                    onClick={() => handleUserSelect(chat)}
+                    className={`w-full px-3 py-2 flex items-center gap-3 rounded-3xl transition-all duration-200 border-0 bg-transparent
+    ${selectedUser && chat._id === selectedUser._id
+                        ? "bg-blue-100 shadow-sm"
+                        : "hover:bg-gray-100"
+                      }`}
                   >
-                    <img
-                      src={follower.profilePic?.url || "https://via.placeholder.com/40"}
-                      width={48}
-                      height={48}
-                      className="rounded-circle me-2"
-                      style={{ objectFit: "cover" }}
-                    />
-                    <div>
-                      <div className="fw-bold">{follower.username}</div>
-                      <small className="text-muted">
-                        {lastMsg
-                          ? lastMsg.length > 30
-                            ? lastMsg.slice(0, 30) + "..."
-                            : lastMsg
-                          : "No messages yet"}
-                      </small>
+                    {/* Profile Pic */}
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={chat.profilePic?.url || "https://via.placeholder.com/40"}
+                        alt={chat.username}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
 
-                      <br />
-                      <small className="text-muted">
+                      {isOnline && (
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                      )}
+                    </div>
+
+                    {/* User Info */}
+                    <div className="flex-1 min-w-0 text-start">
+                      <div className="flex justify-between items-center">
+                        <h6 className="mb-0 fw-bold truncate">
+                          {chat.username}
+                        </h6>
+
+                        {chat.unreadCount > 0 && (
+                          <span className="flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-green-500 text-white text-[11px] font-bold">
+                            {chat.unreadCount > 99 ? "99+" : chat.unreadCount}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="text-muted text-sm truncate">
+                        {chat.lastMessage
+                          ? chat.lastMessage.length > 35
+                            ? chat.lastMessage.slice(0, 35) + "..."
+                            : chat.lastMessage
+                          : "No messages yet"}
+                      </div>
+
+                      <div className="text-xs text-gray-500 mt-1">
                         {isOnline ? (
-                          <span className="text-success">Active</span>
-                        ) : lastSeenTime ? (
-                          `Last seen ${formatLastSeen(lastSeenTime)}`
+                          <span className="text-success fw-medium">
+                            Active now
+                          </span>
+                        ) : chat.lastSeen ? (
+                          formatLastSeen(chat.lastSeen)
                         ) : (
                           "Offline"
                         )}
-                      </small>
+                      </div>
                     </div>
                   </button>
                 );
               })
             ) : (
-              <div className="p-3 text-center text-muted">No followers</div>
+              <div className="p-3 text-center text-muted">
+                No chats available
+              </div>
             )}
           </div>
         </div>
@@ -375,13 +407,13 @@ const Chat = () => {
               onSendMessage={handleSendMessage}
               user={user}
               selectedUser={selectedUser}
-              localUser={localUser}
+              localUser={sidebarChats}
               onLastMessageUpdate={handleLastMessageUpdate}
               onBack={handleBack}
               isMobile={isMobile}
             />
           ) : selectedGroup ? (
-            <GroupChat selectedGroup={selectedGroup} user={user} onBack={handleBack} sortedFollowers={sortedFollowers} />
+            <GroupChat selectedGroup={selectedGroup} user={user} onBack={handleBack} sortedSidebarChats={sortedSidebarChats} />
           ) : (
             <div className="h-100 d-flex align-items-center justify-content-center text-muted">
               Select a user or group to start chatting
@@ -391,16 +423,16 @@ const Chat = () => {
         </div>
       </div>
 
- 
+
 
       {showGroupForm && (
         <div className="fixed inset-0 z-50">
-          
+
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowGroupForm(false)} />
           <div className="flex items-center justify-center p-4" style={{ position: "fixed", inset: 0 }}>
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
 
-              <span className={groupCreateStatus ? 'absolute - left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm animate-pulse whitespace-nowrap':'hidden'}>
+              <span className={groupCreateStatus ? 'absolute - left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm animate-pulse whitespace-nowrap' : 'hidden'}>
                 Creating Group...
               </span>
 
@@ -412,7 +444,7 @@ const Chat = () => {
 
               <h2 className="text-2xl font-semibold text-gray-800 mb-3 text-center">Create Group</h2>
 
-             
+
 
               <form className="space-y-4" onSubmit={handleGroupForm}>
                 <div>
@@ -437,7 +469,7 @@ const Chat = () => {
                     <option value="private">Private Group</option>
                   </select>
                 </div>
-              
+
 
                 <button type="submit" className="btn btn-primary w-100">Create Group</button>
 

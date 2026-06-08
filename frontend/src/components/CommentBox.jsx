@@ -9,8 +9,9 @@ import socket from "../socket";
 import { handleError } from '../utils/errorHandler';
 dayjs.extend(relativeTime);
 import Spinner from "./Spinner";
-import API from "../services/api";
 import { toast } from "react-toastify";
+
+import { getAllComents ,sendComment , deleteComment } from "../services/commentService";
 
 const CommentBox = ({ postId }) => {
   const { user, updateUser } = useContext(AuthContext);
@@ -28,7 +29,7 @@ const CommentBox = ({ postId }) => {
       try {
         setLoading(true);
 
-        const res = await API.get(`/api/comments/${postId}`);
+        const res = await getAllComents(postId)
 
         setComments(res.data.comments);
       } catch (err) {
@@ -82,10 +83,8 @@ const CommentBox = ({ postId }) => {
     if (!newComment.trim()) return;
 
     try {
-      const res = await API.post(
-        `/api/comments/${postId}`,
-        { newComment },
-      );
+   
+      const res = await sendComment(postId , {newComment})
 
       const commentWithPostId = {
         ...res.data,
@@ -105,10 +104,9 @@ const CommentBox = ({ postId }) => {
   // Delete comment
   const handleCommentDelete = async (commentId) => {
     try {
-      const res = await API.delete(
-        `/api/comments/${commentId}`
-      );
+    
 
+      const res = await deleteComment(commentId)
       toast.success(res.data.message);
 
       // Locally update UI
@@ -134,7 +132,7 @@ const CommentBox = ({ postId }) => {
         {loading ?
           <Spinner />
           :
-          comments.slice(0).reverse().map((comment) => (
+          comments?.slice(0).reverse().map((comment) => (
             <div key={comment._id} className="comment">
               <img
                 src={

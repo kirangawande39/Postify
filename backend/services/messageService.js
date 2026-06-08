@@ -25,6 +25,7 @@ const sendMessage = async (req) => {
   const savedMessage = await message.save();
 
   // update last message
+  
   await Chat.findByIdAndUpdate(chatId, { lastMessage: text });
 
   const receiverUser = await User.findById(receiverId).select("fcmToken");

@@ -8,13 +8,13 @@ import "react-toastify/dist/ReactToastify.css";
 import googleLogo from "../assets/img/google_logo.png";
 import { handleError } from "../utils/errorHandler";
 import emailjs from "@emailjs/browser";
-import API from "../services/api";
 import LoadingDots from "../components/common/LoadingDots";
+import { loginUser ,forgotPassword , emailExists } from "../services/authService";
 
 // Regex to validate email format
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Debounce function to avoid frequent API hits
+// Debounce function to avoid frequent APIs hits
 function debounce(func, delay = 2000) {
   let timeout;
   return (...args) => {
@@ -48,9 +48,7 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoginStatus(true);
-      const res = await API.post(`/api/auth/login`,
-        { email, password },
-      );
+      const res=await loginUser({ email, password })
       setLoginStatus(false)
       login(res.data.user);
       toast.success(res.data.message || "Login successful");
@@ -74,9 +72,13 @@ const Login = () => {
     e.preventDefault();
     try {
       setSendLinkStatus(true);
-      const res = await API.post(`/api/auth/forgot-password`, { email: forgotEmail });
+      
+      const res= await forgotPassword({ email: forgotEmail })
+
       const { token, name } = res.data;
+
       setSendLinkStatus(false)
+
       toast.success(res.data.message || `Reset link sent to this ${forgotEmail}`);
 
       setShowForgotModal(false);
@@ -96,7 +98,8 @@ const Login = () => {
     setEmailChecking(true);
     setEmailCheckStatus(null);
     try {
-      await API.post(`/api/auth/check-email`, { email: emailToCheck });
+      
+      await emailExists({ email: emailToCheck })
       setEmailCheckStatus({ exists: true, message: "Email exists. You can reset your password." });
     } catch {
       setEmailCheckStatus({ exists: false, message: "This email is not registered." });

@@ -1,7 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const Spinner = ({ size = "md", text = "Loading..." }) => {
+const Spinner = ({ size = "md", text = "Loading" }) => {
   const sizeClass = size === "sm" ? "spinner-border-sm" : size === "lg" ? "spinner-border-lg" : "";
 
   return (

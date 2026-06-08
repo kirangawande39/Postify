@@ -23,7 +23,7 @@ const login = async (req, res, next) => {
   try {
 
     // console.log("Req.user:",req.user)
-
+    
     const { user, token } = await authServices.loginUser(req.user);
 
     // console.log(token)
@@ -72,6 +72,7 @@ const logout = async (req, res, next) => {
 };
 
 
+
 // Google OAuth callback
 const googleCallBack = async (req, res, next) => {
   try {
@@ -103,6 +104,7 @@ const checkEmail = async (req, res, next) => {
     next(err);
   }
 }
+
 
 const forgotPassword = async (req, res, next) => {
   try {

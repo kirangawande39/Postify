@@ -32,4 +32,7 @@ const getUserChats = async (req) => {
   return chats;
 };
 
-module.exports = { createChat, getUserChats };
+
+
+
+module.exports = { createChat, getUserChats  };

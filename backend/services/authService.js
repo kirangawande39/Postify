@@ -236,7 +236,6 @@ const forgotPassword = async ({ email }) => {
 }
 
 const resetPassword = async (token, newPassword) => {
-
     const user = await User.findOne({
         resetToken: token,
         resetTokenExpires: { $gt: new Date() },

@@ -4,8 +4,10 @@ import { FaSearch, FaTimesCircle } from "react-icons/fa";
 import { handleError } from '../utils/errorHandler';
 import '../assets/css/Search.css';
 import { Link } from 'react-router-dom';
-import API from '../services/api';
 import LoadingDots from '../components/common/LoadingDots';
+
+import { getExplorePosts } from '../services/postService';
+import { searchUsers } from '../services/userService';
 
 
 const Search = () => {
@@ -17,7 +19,7 @@ const Search = () => {
     const [explorePage, setExplorePage] = useState(1);
     const [hasMoreExplore, setHasMoreExplore] = useState(true);
     const [loadingMoreExplore, setLoadingMoreExplore] = useState(false);
-    const [searchStatus, setSearchStatus]=useState(false);
+    const [searchStatus, setSearchStatus] = useState(false);
     // Fetch explore posts with pagination   
 
     const fetchExplorePosts = async () => {
@@ -25,7 +27,9 @@ const Search = () => {
 
         setLoadingMoreExplore(true);
         try {
-            const res = await API.get(`/api/posts?page=${explorePage}&limit=5`);
+
+            const res = await getExplorePosts(explorePage)
+
             const newPosts = res.data.posts;
 
             if (newPosts.length === 0) {
@@ -46,7 +50,7 @@ const Search = () => {
         fetchExplorePosts();
     }, []);
 
-    
+
 
     // Search logic
     useEffect(() => {
@@ -59,13 +63,8 @@ const Search = () => {
         setLoading(true);
         const timeout = setTimeout(async () => {
             try {
+                const res = await searchUsers(query);
                 
-                const res = await API.get(
-                    `/api/users/search?query=${query}`,
-                   
-                );
-               
-
                 setResults(res.data.users);
             } catch (err) {
                 handleError(err);
@@ -110,7 +109,8 @@ const Search = () => {
             {query.trim() ? (
                 <div className="results-container">
                     {loading ? (
-                        <p className="loading-text">Searching users...</p>
+                        <LoadingDots text='Searching User' fontSize='text-lg' textClassName='black' />
+
                     ) : results.length === 0 ? (
                         <p className="no-result">No users found</p>
                     ) : (
@@ -169,7 +169,7 @@ const Search = () => {
                                 onClick={fetchExplorePosts}
                                 disabled={loadingMoreExplore}
                             >
-                                {loadingMoreExplore ? "Loading..." : "Load More"}
+                                {loadingMoreExplore ? <LoadingDots /> : "Load More"}
                             </button>
                         </div>
                     )}

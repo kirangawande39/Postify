@@ -38,9 +38,12 @@ const addComment = async (req) => {
 
 // Get Comments
 const getComments = async (req) => {
+  console.log("getComments called", req.params.postId)
   const comments = await Comment.find({ post: req.params.postId }).populate("user");
-  return { comments };
+ 
+  return  {comments};
 };
+
 
 // Delete Comment
 const deleteComment = async (req) => {

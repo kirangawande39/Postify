@@ -20,11 +20,11 @@ import "react-toastify/dist/ReactToastify.css";
 
 import { OnlineProvider } from "./context/OnlineStatusContext";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
-import API from "./services/api";
 import { CallProvider } from "./context/CallContext";
 import IncomingCallModal from "./components/IncomingCallModal";
 import VideoCall from "./pages/VideoCall";
-
+import { userLoginVerify } from "./services/authService";
+import { messageUnseenCount } from "./services/chatService";
 
 function AppWrapper() {
   // Wrap App inside Auth and Online providers
@@ -52,7 +52,7 @@ function App() {
   useEffect(() => {
     const userVerify = async () => {
       try {
-        const res = await API.get('/api/auth/check');
+         const res = await userLoginVerify();
         // console.log("check:", res.data);
         login(res.data.user);
         // toast.success(res.data.message || "Login Sucessfully..");
@@ -102,7 +102,8 @@ function App() {
   // Fetch unseen message counts + privacy status
   const fetchUnseenCounts = useCallback(async () => {
     try {
-      const res = await API.get(`/api/messages/unseen-counts`);
+      const res = await messageUnseenCount();
+      
       setUnseenCounts(res.data.data);
       setIsPrivateStatus(res.data.privacyStatus);
     } catch (err) {

@@ -9,10 +9,10 @@ import socket from "../socket";
 import { useNavigate } from "react-router-dom";
 import { MdArrowBack } from "react-icons/md";
 import Spinner from "./Spinner";
-import API from "../services/api";
 import '../assets/css/GroupChat.css'
+import { getGroupMessages ,sendGroupMessages } from "../services/groupService";
 
-const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedFollowers }) => {
+const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedSidebarChats }) => {
     const [showGroupDetails, setShowGroupDetails] = useState(false);
     const [openActions, setOpenActions] = useState(false);
 
@@ -54,14 +54,13 @@ const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedFollowers }) =
 
         const fetchMessages = async () => {
             try {
-                const res = await API.get(
-                    `/api/groups/messages/${groupId}`);
 
+                const res = await getGroupMessages(groupId)
                 setGroupMessages(res.data.messages);
             } catch (err) {
                 console.error("Failed fetching group messages", err);
             }
-            finally{
+            finally {
                 setLoading(false);
             }
         };
@@ -156,20 +155,17 @@ const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedFollowers }) =
         e.preventDefault();
 
         try {
-            await API.post(
-                `/api/groups/message`,
-                {
+            
+            await sendGroupMessages({
                     message: newGroupMessage,
                     groupId
-                },
-              
-            );
+                })
 
             setNewGroupMessage("");
             stopTyping();
         } catch (err) {
             // handleError(err);
-            console.error("group message sending failed:",err)
+            console.error("group message sending failed:", err)
         }
     };
 
@@ -227,7 +223,7 @@ const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedFollowers }) =
                     <GroupActionsModal
                         group={selectedGroup}
                         user={user}
-                        sortedFollowers={sortedFollowers}
+                        sortedSidebarChats={sortedSidebarChats}
                         onClose={() => setOpenActions(false)}
                     />
                 )}

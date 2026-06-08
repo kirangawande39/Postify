@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { handleError } from "../utils/errorHandler";
 import { AuthContext } from "../context/AuthContext";
-import API from "../services/api";
+import { sendOtp, verifyOtp, registerFormSubmit } from "../services/authService";
 
 const Register = () => {
   const { user } = useContext(AuthContext);
@@ -60,15 +60,14 @@ const Register = () => {
   };
 
   // SEND OTP
-  const sendOtp = async () => {
+  const handleSendOtp = async () => {
     if (!formData.email.trim()) {
       return toast.error("Please enter email first");
     }
 
     try {
-      const res = await API.post("/api/auth/send-otp", {
-        email: formData.email,
-      });
+
+      const res = await sendOtp({ email: formData.email })
 
       if (res.data.success) {
         setOtpSent(true);
@@ -82,16 +81,16 @@ const Register = () => {
   };
 
   // VERIFY OTP
-  const verifyOtp = async () => {
+  const handleVerifyOtp = async () => {
     if (!otp.trim()) {
       return toast.error("Please enter OTP");
     }
 
     try {
-      const res = await API.post("/api/auth/verify-otp", {
+      const res = await verifyOtp({
         email: formData.email,
         otp,
-      });
+      })
 
       if (res.data.success) {
         setIsEmailVerified(true);
@@ -112,9 +111,8 @@ const Register = () => {
     }
 
     try {
-
-      const res = await API.post("/api/auth/register", formData);
-
+      const res = await registerFormSubmit(formData)
+      
       if (res.data.success) {
         toast.success(res.data.message);
         navigate("/login");
@@ -130,7 +128,7 @@ const Register = () => {
         className="card p-4 shadow rounded-4 border-0"
         style={{ width: "100%", maxWidth: "360px" }}
       >
-       <h1 className="text-primary text-center logo fw-bold mb-4">VibeNet</h1>
+        <h1 className="text-primary text-center logo fw-bold mb-4">VibeNet</h1>
         <p className="text-center  mb-3 font-bold text-black ">Create your account</p>
 
         <form onSubmit={handleSubmit}>
@@ -143,7 +141,7 @@ const Register = () => {
               className="form-control"
               value={formData.name}
               onChange={handleChange}
-              required
+            // required
             />
           </div>
 
@@ -156,7 +154,7 @@ const Register = () => {
               className="form-control"
               value={formData.username}
               onChange={handleChange}
-              required
+            // required
             />
           </div>
 
@@ -169,15 +167,15 @@ const Register = () => {
               className="form-control rounded-start"
               value={formData.email}
               onChange={handleChange}
-              required
-              disabled={isEmailVerified}
+            // required
+            // disabled={isEmailVerified}
             />
 
             <button
               type="button"
               className="btn btn-outline-primary rounded-end"
-              onClick={sendOtp}
-              disabled={!canResend || isEmailVerified}
+              onClick={handleSendOtp}
+              // disabled={!canResend || isEmailVerified}
               style={{ minWidth: "95px", fontSize: "12px" }}
             >
               {isEmailVerified
@@ -202,7 +200,7 @@ const Register = () => {
               <button
                 type="button"
                 className="btn btn-success w-100"
-                onClick={verifyOtp}
+                onClick={handleVerifyOtp}
               >
                 Verify OTP
               </button>
@@ -218,7 +216,7 @@ const Register = () => {
               className="form-control"
               value={formData.password}
               onChange={handleChange}
-              required
+            // required
             />
           </div>
 

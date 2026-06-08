@@ -14,6 +14,7 @@ const addComment = async (req, res, next) => {
 const getComments = async (req, res, next) => {
   try {
     const result = await commentServices.getComments(req);
+    // console.log("result", result)
     res.json(result);
   } catch (error) {
     next(error);

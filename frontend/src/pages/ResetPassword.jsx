@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import API from "../services/api";
 import LoadingDots from "../components/common/LoadingDots";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../assets/css/Login.css";
+import { resetPassword } from "../services/authService";
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -36,10 +36,7 @@ const ResetPassword = () => {
     try {
       setLoading(true);
 
-      await API.post("/api/auth/reset-password", {
-        token,
-        newPassword: password,
-      });
+      await resetPassword({ token, newPassword: password })
 
       toast.success("Password reset successful");
 
@@ -140,7 +137,7 @@ const ResetPassword = () => {
           </button>
         </form>
 
-       
+
 
       </div>
     </div>

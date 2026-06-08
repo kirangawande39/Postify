@@ -14,7 +14,8 @@ import "../assets/css/SidebarNavbar.css";
 
 import { toast } from "react-toastify";
 import { handleError } from "../utils/errorHandler";
-import API from "../services/api";
+import { userPrivacy } from "../services/userService";
+import { logoutUser } from "../services/authService";
 
 const SidebarNavbar = ({ isPrivateStatus }) => {
   const { user, logout } = useContext(AuthContext);
@@ -52,10 +53,7 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
       const newStatus = !isPrivate;
 
       setIsPrivate(newStatus);
-
-      const res = await API.put("/api/users/privacy", {
-        isPrivate: newStatus,
-      });
+      const res = await userPrivacy({ isPrivate: newStatus })
 
       toast.success(res.data.message);
 
@@ -73,8 +71,7 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
   // Logout
   const handleLogout = async () => {
     try {
-      const res = await API.post("/api/auth/logout", {});
-
+      const res= await logoutUser();
       toast.success(res.data.message);
 
       logout();
@@ -93,9 +90,9 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
       className="sidebar d-none d-md-flex flex-column p-3 shadow"
       style={{ height: "100vh" }}
     >
-     <h1 className="text-primary logo fw-bold mb-4">VibeNet</h1>
+      <h1 className="text-primary logo fw-bold mb-4">VibeNet</h1>
 
-     
+
       <div className="list  " >
         <Link
           to="/"
@@ -123,23 +120,23 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
 
         <Link
           to={`/chat/${user.id}`}
-          className="nav-link mb-4 d-flex align-items-center"
+          className="nav-link mb-4 d-flex items-center "
         >
           <FaCommentDots className="me-2" />
           <span>Chat</span>
         </Link>
 
-       
+
         <button
           onClick={() => setShowSetting(!showSetting)}
-          className="settings-btn d-flex align-items-center"
+          className="w-fit settings-btn d-flex align-items-center"
         >
           <FaCog className="me-2" />
           <span>Settings</span>
         </button>
       </div>
 
-     
+
       {showSetting && (
         <div className="p-2 border-top mt-2">
           <label className="form-check-label d-flex justify-content-between align-items-center">
@@ -168,10 +165,10 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
         </div>
       )}
 
-     
+
       <button
         onClick={handleLogout}
-        className="btn btn-outline-danger mt-auto d-flex align-items-center"
+        className="w-fit btn btn-outline-danger mt-auto d-flex align-items-center"
       >
         <FaSignOutAlt className="me-2" />
         Logout

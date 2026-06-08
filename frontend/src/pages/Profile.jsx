@@ -16,10 +16,13 @@ import { MdAddBox } from "react-icons/md";
 import FollowingModal from "../components/FollowingModal";
 import FollowersModal from "../components/FollowersModal";
 import FollowRequestModel from "../components/FollowRequestModel";
-import API from "../services/api";
 import LoadingDots from "../components/common/LoadingDots";
+import { getProfileData } from "../services/userService";
+import { postDelete, getPersonalPosts, createPost } from "../services/postService";
 
+import { storyUpload } from '../services/storyService'
 
+import { removeFollower, sendFollow, sendUnFollow ,followBack} from '../services/followService'
 
 // Start of component
 const Profile = () => {
@@ -150,10 +153,7 @@ const Profile = () => {
     // alert(`Post was deleted ${postId} is here`)
 
     try {
-      // backend route: DELETE /posts/:id
-      const res = await API.delete(
-        `/api/posts/${postId}`,
-      );
+      const res = await postDelete(postId)
 
       // Remove deleted post from local state
       setPosts(posts.filter(post => post._id !== postId));
@@ -173,7 +173,9 @@ const Profile = () => {
       if (!user) return;
 
       try {
-        const response = await API.get(`/api/users/${id}`);
+
+
+        const response = await getProfileData(id)
 
         setProfileData(response.data.user);
         setMutualCount(response.data.mutualCount);
@@ -200,7 +202,9 @@ const Profile = () => {
 
     const fetchPostData = async () => {
       try {
-        const res = await API.get(`/api/posts/${id}`);
+      
+
+        const res = await getPersonalPosts(id)
         setPosts(res.data.posts || []);
       } catch (err) {
         handleError(err)
@@ -256,11 +260,10 @@ const Profile = () => {
 
       setCreatePostStatus(true);
 
-      const res = await API.post(`/api/posts/${user?.id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+
+      const userId = user?.id;
+
+      const res = await createPost(userId, formData)
 
       setCreatePostStatus(false)
       toast.success(res.data.message);
@@ -322,11 +325,8 @@ const Profile = () => {
     setStoryLoading(true);
 
     try {
-      const res = await API.post(`/api/stories`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+
+      const res = await storyUpload(formData);
 
       // Store the uploaded story data in the parent component state
       const story = res.data.story;
@@ -355,11 +355,9 @@ const Profile = () => {
 
 
     try {
-      const res = await API.put(
-        `/api/follow/remove-follower/${followerId}`,
-        {},
-      );
+    
 
+      const res = await removeFollower(followerId)
 
       toast.success(res.data.message)
 
@@ -385,10 +383,7 @@ const Profile = () => {
     try {
 
 
-      const res = await API.post(
-        `/api/follow/${userIdTofollow}/follow`,
-        {},
-      );
+      const res = await sendFollow(userIdTofollow)
 
       toast.success(res.data.message)
 
@@ -411,10 +406,8 @@ const Profile = () => {
 
   const handleUnfollow = async (userIdToUnfollow) => {
     try {
-      const res = await API.post(
-        `/api/follow/${userIdToUnfollow}/unfollow`,
-        {},
-      );
+
+      await sendUnFollow(userIdToUnfollow)
 
       setProfileData(prev => ({
         ...prev,
@@ -451,9 +444,7 @@ const Profile = () => {
 
   const handleFollowBack = async (followbackUserId) => {
     try {
-      const res = await API.put(`/api/follow/follow-back/${followbackUserId}`,
-        {},
-      )
+      const res = await followBack(followbackUserId)
 
       toast.success(res.data.message)
     }

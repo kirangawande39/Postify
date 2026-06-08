@@ -2,6 +2,7 @@ const User = require('../models/User');
 const { cloudinary } = require('../config/cloudConfig');
 const streamifier = require("streamifier");
 const sharp = require('sharp')
+const Chat = require('../models/Chat')
 
 
 const getUserProfile = async (currentUserId, profileUserId) => {
@@ -14,13 +15,16 @@ const getUserProfile = async (currentUserId, profileUserId) => {
     const currentFollowing = currentUser.following || [];
 
     const profileUser = await User.findById(profileUserId)
-        .populate("followers", "username profilePic")
-        .populate("following", "username profilePic")
-        .populate("followRequests.user", "username profilePic");
+        .populate("followers", "username profilePic lastSeen")
+        .populate("following", "username profilePic lastSeen")
+        .populate("followRequests.user", "username profilePic lastSeen");
+
+
 
     if (!profileUser) {
         throw new Error("user not found")
     }
+
 
     const profileFollowersIds = profileUser.followers.map(f => f._id.toString());
 
@@ -53,7 +57,7 @@ const getUserProfile = async (currentUserId, profileUserId) => {
 
 const updateUserProfile = async (req) => {
 
-   
+
     const userId = req.params.id;
     const { name, bio } = req.body;
 
@@ -98,8 +102,8 @@ const searchUsers = async (req) => {
 
     const users = await User.find({
         $or: [
-            { username: { $regex: query, $options: "i" } },
-            { name: { $regex: query, $options: "i" } }
+            { username: { $regex: `^${query}`, $options: "i" } },
+            { name: { $regex: `^${query}`, $options: "i" } }
         ]
     })
         .select("_id username name profilePic followers")
