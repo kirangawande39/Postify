@@ -18,16 +18,12 @@ export default defineConfig({
   ],
 
   server: {
-  
-    // allowedHosts: [
-    //   "res-toe-cast-satellite.trycloudflare.com"
-    // ],
     allowedHosts: [
       "https://vibe-net-two.vercel.app"
     ],
-    // allowedHosts: [
-    //   "http://localhost:5173"
-    // ],
+    allowedHosts: [
+      "http://localhost:5173"
+    ],
     
   },
 

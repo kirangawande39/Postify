@@ -1,6 +1,6 @@
 const express = require("express");
 const { register, login, logout, checkEmail, forgotPassword, resetPassword, googleCallBack, check, sendOtp, verifyOtp } = require("../controllers/authController");
-const { registerLimiter, loginLimiter, forgotPasswordLimiter } = require("../middlewares/rateLimit");
+const { registerLimiter, loginLimiter, otpLimiter,forgotPasswordLimiter } = require("../middlewares/rateLimit");
 const passport = require("passport");
 const { protect } = require("../middlewares/authMiddleware");
 const validate = require('../middlewares/validate')
@@ -50,6 +50,7 @@ router.post("/login", loginLimiter, (req, res, next) => {
     if (err) return next(err);
     if (!user) {
       // login failed
+      // console.log("login failed")
       return res.status(401).json({
         success: false,
         message: info.message || "Invalid email or password"
@@ -85,7 +86,7 @@ router.get(
 );
 
 
-router.post("/send-otp", validate(emailSchema),sendOtp)
+router.post("/send-otp", otpLimiter, validate(emailSchema),sendOtp)
 router.post("/verify-otp",validate(verifyOTPSchema), verifyOtp)
 
 module.exports = router;

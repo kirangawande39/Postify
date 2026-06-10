@@ -9,7 +9,7 @@ import googleLogo from "../assets/img/google_logo.png";
 import { handleError } from "../utils/errorHandler";
 import emailjs from "@emailjs/browser";
 import LoadingDots from "../components/common/LoadingDots";
-import { loginUser ,forgotPassword , emailExists } from "../services/authService";
+import { loginUser, forgotPassword, emailExists } from "../services/authService";
 
 // Regex to validate email format
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,17 +48,20 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoginStatus(true);
-      const res=await loginUser({ email, password })
-      setLoginStatus(false)
-      login(res.data.user);
+      const res = await loginUser({ email, password })
       toast.success(res.data.message || "Login successful");
+      login(res.data.user);
       setTimeout(() => navigate("/"), 1000);
     } catch (err) {
       if (err.response && err.response.status === 429) {
         toast.error(err.response.data || "Too many requests, try again later.");
       } else {
+        setLoginStatus(false)
         handleError(err);
       }
+    }
+    finally {
+      setLoginStatus(false);
     }
   };
 
@@ -72,8 +75,8 @@ const Login = () => {
     e.preventDefault();
     try {
       setSendLinkStatus(true);
-      
-      const res= await forgotPassword({ email: forgotEmail })
+
+      const res = await forgotPassword({ email: forgotEmail })
 
       const { token, name } = res.data;
 
@@ -98,7 +101,7 @@ const Login = () => {
     setEmailChecking(true);
     setEmailCheckStatus(null);
     try {
-      
+
       await emailExists({ email: emailToCheck })
       setEmailCheckStatus({ exists: true, message: "Email exists. You can reset your password." });
     } catch {
