@@ -20,19 +20,9 @@ const createChat = async (req) => {
   return { status: 201, data: chat };
 };
 
-// Get User Chats
-const getUserChats = async (req) => {
-  const userId = req.params.userId;
-
-  const chats = await Chat.find({
-    members: userId,
-    lastMessage: { $ne: "" }
-  }).populate("members", "name profilePic");
-
-  return chats;
-};
 
 
 
 
-module.exports = { createChat, getUserChats  };
+
+module.exports = { createChat  };

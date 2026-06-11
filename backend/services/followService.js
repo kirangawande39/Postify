@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const Follow = require("../models/Follow");
 const User = require("../models/User");
-const {notificationQueue} = require("../queues/notificationQueue");
+const Chat = require("../models/Chat")
+const { notificationQueue } = require("../queues/notificationQueue");
 
 // follow user logic
 const followUser = async (req) => {
@@ -10,16 +11,16 @@ const followUser = async (req) => {
   const followerId = req.user.id;
 
   // user being followed
-  const followingId = req.params.userId;
+  const targetUserId = req.params.targetUserId;
 
-  if (followerId === followingId) {
+  if (followerId === targetUserId) {
     return { status: 422, data: { message: "You can't follow yourself." } };
   }
 
   // check if already following
   const alreadyFollowed = await Follow.findOne({
     follower: followerId,
-    following: followingId
+    following: targetUserId
   });
 
   if (alreadyFollowed) {
@@ -30,7 +31,7 @@ const followUser = async (req) => {
   const { username } = await User.findById(followerId).select("username");
 
   // get target user privacy + token
-  const { isPrivate, fcmToken } = await User.findById(followingId)
+  const { isPrivate, fcmToken } = await User.findById(targetUserId)
     .select("isPrivate fcmToken");
 
   // private account case
@@ -38,7 +39,7 @@ const followUser = async (req) => {
 
     // check if request already sent
     const alreadySent = await User.findOne({
-      _id: followingId,
+      _id: targetUserId,
       "followRequests.user": followerId,
       "followRequests.status": "pending"
     });
@@ -51,7 +52,7 @@ const followUser = async (req) => {
     }
 
     // add follow request
-    await User.findByIdAndUpdate(followingId, {
+    await User.findByIdAndUpdate(targetUserId, {
       $addToSet: {
         followRequests: {
           user: followerId,
@@ -79,19 +80,32 @@ const followUser = async (req) => {
     };
   }
 
+
+
   // public account follow
   await User.findByIdAndUpdate(followerId, {
-    $addToSet: { following: followingId }
+    $addToSet: { following: targetUserId }
   });
 
-  await User.findByIdAndUpdate(followingId, {
+  await User.findByIdAndUpdate(targetUserId, {
     $addToSet: { followers: followerId }
   });
+
+  const existingChat = await Chat.findOne({
+    members: { $all: [followerId, targetUserId] }
+  });
+
+  if (!existingChat) {
+    const newChat = await Chat.create({
+      members: [followerId, targetUserId]
+    });
+  }
+
 
   // create follow record
   const follow = await Follow.create({
     follower: followerId,
-    following: followingId
+    following: targetUserId
   });
 
   // send notification
@@ -117,7 +131,7 @@ const followUser = async (req) => {
 const unfollowUser = async (req) => {
 
   const currentUserId = req.user.id;
-  const targetUserId = req.params.userId;
+  const targetUserId = req.params.targetUserId;
 
   if (currentUserId === targetUserId) {
     throw new Error("You can't unfollow yourself.");
@@ -144,24 +158,24 @@ const unfollowUser = async (req) => {
 const removeFollower = async (req) => {
 
   const currentUserId = req.user.id;
-  const followerId = req.params.followedId;
+  const targetUserId = req.params.targetUserId;
 
-  if (currentUserId === followerId) {
+  if (currentUserId === targetUserId) {
     throw new Error("You can't remove yourself.");
   }
 
   await User.findByIdAndUpdate(
     new mongoose.Types.ObjectId(currentUserId),
-    { $pull: { followers: new mongoose.Types.ObjectId(followerId) } }
+    { $pull: { followers: new mongoose.Types.ObjectId(targetUserId) } }
   );
 
   await User.findByIdAndUpdate(
-    new mongoose.Types.ObjectId(followerId),
+    new mongoose.Types.ObjectId(targetUserId),
     { $pull: { following: new mongoose.Types.ObjectId(currentUserId) } }
   );
 
   await Follow.findOneAndDelete({
-    follower: followerId,
+    follower: targetUserId,
     following: currentUserId,
   });
 
@@ -173,12 +187,12 @@ const removeFollower = async (req) => {
 const declineUser = async (req) => {
 
   const userId = req.user.id;
-  const declineuserId = new mongoose.Types.ObjectId(req.params.declineuserId);
+  const targetUserId = new mongoose.Types.ObjectId(req.params.targetUserId);
 
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     {
-      $pull: { followRequests: { user: declineuserId } }
+      $pull: { followRequests: { user: targetUserId } }
     },
     { new: true }
   );
@@ -195,30 +209,44 @@ const declineUser = async (req) => {
 const acceptUser = async (req) => {
 
   const userId = req.user.id;
-  const FollowRequestUserId = req.params.acceptUserId;
+  const targetUserId = req.params.targetUserId;
 
   // remove from followRequests
   await User.findByIdAndUpdate(
     userId,
     {
-      $pull: { followRequests: { user: FollowRequestUserId } }
+      $pull: { followRequests: { user: targetUserId } }
     }
   );
 
   // add following + followers
-  await User.findByIdAndUpdate(FollowRequestUserId, {
+  await User.findByIdAndUpdate(targetUserId, {
     $addToSet: { following: userId }
   });
 
   await User.findByIdAndUpdate(userId, {
-    $addToSet: { followers: FollowRequestUserId }
+    $addToSet: { followers: targetUserId }
   });
 
   // create follow record
   await Follow.create({
-    follower: FollowRequestUserId,
+    follower: targetUserId,
     following: userId
   });
+
+  await Chat.create({
+    members: [userId, targetUserId]
+  })
+
+  const existingChat = await Chat.findOne({
+    members: { $all: [userId, targetUserId] }
+  });
+
+  if (!existingChat) {
+    const newChat = await Chat.create({
+      members: [userId, targetUserId]
+    });
+  }
 
   return {
     success: true,
@@ -231,19 +259,19 @@ const acceptUser = async (req) => {
 const followBack = async (req) => {
 
   const userId = req.user.id;
-  const followbackUserId = req.params.followbackUserId;
+  const targetUserId = req.params.targetUserId;
 
   await User.findByIdAndUpdate(userId, {
-    $addToSet: { following: followbackUserId }
+    $addToSet: { following: targetUserId }
   });
 
-  await User.findByIdAndUpdate(followbackUserId, {
+  await User.findByIdAndUpdate(targetUserId, {
     $addToSet: { followers: userId }
   });
 
   await Follow.create({
     follower: userId,
-    following: followbackUserId
+    following: targetUserId
   });
 
   return {

@@ -60,8 +60,8 @@ const sendMessage = async (req) => {
     let botReplyText;
 
     try {
-      // botReplyText = await getAIReply(text);
-      botReplyText = await generateBotReply(text);
+      botReplyText = await getAIReply(text);
+      // botReplyText = await generateBotReply(text);
     } catch (err) {
       botReplyText = "Sorry, I'm having trouble replying right now. 😔";
     }

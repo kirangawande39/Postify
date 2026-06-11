@@ -165,7 +165,7 @@ function App() {
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/chat/:id" element={<Chat />} />
+        <Route path="/chats" element={<Chat />} />
         <Route path="/profile/:id/edit_profile" element={<EditProfile />} />
         <Route path="/search" element={<Search />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />

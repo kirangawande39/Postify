@@ -95,6 +95,8 @@ const googleCallBack = async (req, res, next) => {
   }
 };
 
+
+
 const checkEmail = async (req, res, next) => {
   try {
     await authServices.checkEmail(req.body)

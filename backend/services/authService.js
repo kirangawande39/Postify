@@ -52,6 +52,7 @@ const registerUser = async ({ name, email, password, username }) => {
         members: [registeredUser._id, BOT_USER_ID],
     });
 
+    
     // console.log("chat :: " + chat);
 
     //  Send welcome message in that chat
@@ -101,6 +102,7 @@ const loginUser = async (user) => {
             text
         })
     }
+    
 
     return {
         token,
@@ -280,6 +282,7 @@ const sendOtp = async (email) => {
 
     // await SendOTP(email, OTP)
 
+    
     await otpQueue.add("otp-send", {
         email,
         OTP
@@ -290,7 +293,7 @@ const sendOtp = async (email) => {
     const res = await Otp.create({
         email,
         otp: OTP,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+        expiresAt: new Date(Date.now() + 1 * 60 * 1000)
     })
 
     // console.log("OTP::", res)

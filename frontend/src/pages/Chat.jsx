@@ -344,7 +344,7 @@ const Chat = () => {
                     {/* Profile Pic */}
                     <div className="relative flex-shrink-0">
                       <img
-                        src={chat.profilePic?.url || "https://via.placeholder.com/40"}
+                        src={chat.profilePic?.url || "https://cdn-icons-png.flaticon.com/256/8847/8847419.png"}
                         alt={chat.username}
                         className="w-12 h-12 rounded-full object-cover"
                       />

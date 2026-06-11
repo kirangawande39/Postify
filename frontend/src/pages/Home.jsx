@@ -482,7 +482,7 @@ const Home = () => {
                     <img
                       src={
                         sugg.profilePic?.url ||
-                        "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
+                        "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jzg"
                       }
                       alt={sugg.username}
                       className="vibenet-suggestion-avatar"
@@ -533,8 +533,6 @@ const Home = () => {
         setShowViewers={setShowViewers}
       />
 
-
-
       <div className="vibenet-main">
         <div className="vibenet-feed">
           <div className="vibenet-stories">
@@ -558,7 +556,7 @@ const Home = () => {
         z-50">
               <span className="ml-10 font-extrabold text-2xl" onClick={() => setChatBoat(false)}>×</span>
               <img
-                onClick={() => navigate(`/chat/${user.id}`)}
+                onClick={() => navigate(`/chats`)}
                 src="https://cdn3d.iconscout.com/3d/premium/thumb/chatbot-11798649-9666248.png"   // apna icon daal do
                 className="w-20 h-20"
                 alt="Chat Logo"
@@ -596,7 +594,7 @@ const Home = () => {
             <img
               src={
                 user?.profilePic?.url ||
-                "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
+                "https://png.pngtree.com/png-vector/20240529/ourmid/pngtree-the-logo-of-an-avatar-profile-outlines-in-an-icon-circle-vector-png-image_6959193.png"
               }
               alt={user.username}
               className="vibenet-user-avatar rounded-circle"

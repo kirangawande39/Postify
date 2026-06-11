@@ -45,7 +45,7 @@ const Login = () => {
   }, [user, navigate]);
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault();``
     try {
       setLoginStatus(true);
       const res = await loginUser({ email, password })

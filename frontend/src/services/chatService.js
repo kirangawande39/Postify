@@ -4,6 +4,7 @@ export const sidebarChatData = (data) => {
     return API.get(`/api/chats/sidebar`)
 }
 
+
 export const getChatMessages = (chatId, pageNumber) => {
     return API.get(
         `/api/messages/${chatId}?page=${pageNumber}&limit=20`,

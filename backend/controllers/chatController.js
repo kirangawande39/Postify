@@ -14,18 +14,6 @@ const createChat = async (req, res, next) => {
   }
 };
 
-// Get User Chats
-const getUserChats = async (req, res, next) => {
-  try {
-    const result = await chatServices.getUserChats(req);
-    res.status(200).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-
-
 
 const getSidebarChats = async (req, res) => {
   // console.log("getsidebar called")
@@ -100,4 +88,4 @@ const getSidebarChats = async (req, res) => {
   }
 };
 
-module.exports = { createChat, getUserChats, getSidebarChats };
+module.exports = { createChat, getSidebarChats };

@@ -129,7 +129,7 @@ const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
                 </Link>
 
                 <Link
-                  to={`/chat/${user.id}`}
+                  to={`/chats`}
                   className="dropdown-item d-flex align-items-center"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -206,7 +206,7 @@ const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
                 <FaSearch />
               </Link>
               <div className="chat-icon-wrapper">
-                <Link to={`/chat/${user.id}`} className="bottom-icon">
+                <Link to={`/chats`} className="bottom-icon">
                   <FaCommentDots size={24} />
                   {totalUnseenCount > 0 && (
                     <span className="unseen-badge">{totalUnseenCount}</span>

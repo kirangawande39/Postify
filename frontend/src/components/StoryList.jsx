@@ -56,7 +56,7 @@ const StoryList = ({ stories, hasSeenAllStoriesCurrentUser, currentUserStories, 
                   src={
                     currentUser.profilePic?.url ||
                     currentUser?.profilePic ||
-                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                    "https://png.pngtree.com/png-vector/20240529/ourmid/pngtree-the-logo-of-an-avatar-profile-outlines-in-an-icon-circle-vector-png-image_6959193.png"
                   }
                   alt="Your Story"
                   style={{ objectFit: "cover" }}

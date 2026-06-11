@@ -45,7 +45,7 @@ router.post("/register", registerLimiter, validate(registerSchema), register);
 
 router.post("/logout", protect, logout);
 
-router.post("/login", loginLimiter, (req, res, next) => {
+router.post("/login", loginLimiter,validate(loginSchema), (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) return next(err);
     if (!user) {

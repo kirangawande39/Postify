@@ -119,7 +119,7 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
         </Link>
 
         <Link
-          to={`/chat/${user.id}`}
+          to={`/chats`}
           className="nav-link mb-4 d-flex items-center "
         >
           <FaCommentDots className="me-2" />
