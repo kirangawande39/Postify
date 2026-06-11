@@ -122,7 +122,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
     fetchMessages(1);
   }, [chatId]);
 
- 
+
 
   const fetchMessages = async (pageNumber) => {
     try {
@@ -256,6 +256,8 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
       const res = await sendMessage({ chatId, receiverId, text: newMessage })
 
       // console.log("msg res :", res.data)
+      setNewMessage("");
+
 
       const sentMessage = {
         ...res.data,
@@ -264,7 +266,6 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
       // onLastMessageUpdate(newMessage);
       // setMessages((prev) => [...prev, sentMessage]);
-      setNewMessage("");
 
 
 
@@ -524,7 +525,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
 
                   <div style={{ maxWidth: "60%" }}>
-                    {/* 📝 Text Message Box */}
+                   
 
                     {msg.text &&
 
@@ -532,12 +533,12 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
                         onTouchMove={handleTouchMove}
                         onTouchEnd={handleTouchEnd}>
 
-                        <div>
-                          {msg.text}
-                        </div>
+                        <p className="whitespace-pre-line">
+                          {msg?.text}
+                        </p>
 
 
-                        {/* 🕒 Time */}
+                     
                         <div className="text-muted text-end mt-1" style={{ fontSize: "0.75rem" }}>
                           {time}
                         </div>
@@ -559,7 +560,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
 
 
-                    {/* 🖼️ Image Block */}
+                    
                     {msg.image?.url && (
                       <div className={`message-image-container ${isOwn ? "sender-image" : "receiver-image"}`}>
                         <img

@@ -52,7 +52,29 @@ const registerUser = async ({ name, email, password, username }) => {
         members: [registeredUser._id, BOT_USER_ID],
     });
 
-    
+
+    const welcomeMessage = `👋 Welcome to VibeNet, ${newUser.username}!
+
+I'm VibeBot, your AI assistant.
+
+🚀 Get Started:
+
+• Add a profile picture and bio
+• Create your first image post
+• Upload a story using the '+' button on your profile
+• Follow users and discover new people
+• Chat, create groups, and start video calls
+• Get notifications for likes, comments, follows, and messages
+
+🔒 Privacy:
+
+• Public Account: Anyone can view your profile and posts.
+• Private Account: Non-followers can only see your follower and following counts. Your posts remain hidden until you approve their follow request.
+
+💡 Need help? Just send me a message anytime.
+
+Enjoy your journey on VibeNet! 🎉
+`
     // console.log("chat :: " + chat);
 
     //  Send welcome message in that chat
@@ -60,7 +82,7 @@ const registerUser = async ({ name, email, password, username }) => {
         chatId: chat._id,
         sender: BOT_USER_ID,
         receiver: registeredUser._id,
-        text: "👋 Welcome to VibeNet! I'm your assistant bot. Feel free to ask anything.",
+        text:welcomeMessage,
     });
 
     // console.log("message::" + message);
@@ -102,7 +124,7 @@ const loginUser = async (user) => {
             text
         })
     }
-    
+
 
     return {
         token,
@@ -282,7 +304,7 @@ const sendOtp = async (email) => {
 
     // await SendOTP(email, OTP)
 
-    
+
     await otpQueue.add("otp-send", {
         email,
         OTP
