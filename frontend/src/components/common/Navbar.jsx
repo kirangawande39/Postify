@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useContext, useState, useRef, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import {
   FaHome,
   FaUser,
@@ -12,11 +12,11 @@ import {
   FaCog,
 } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
-import "../assets/css/Navbar.css";
+import "../../assets/css/Navbar.css";
 import { ToastContainer, toast, Slide } from "react-toastify";
-import { handleError } from "../utils/errorHandler";
-import { logoutUser } from "../services/authService";
-import { userPrivacy } from "../services/userService";
+import { handleError } from "../../utils/errorHandler";
+import { logoutUser } from "../../services/authService";
+import { userPrivacy } from "../../services/userService";
 
 const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
   const { user, logout } = useContext(AuthContext);

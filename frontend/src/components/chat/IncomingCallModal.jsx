@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { useCall } from "../context/CallContext";
-import ringtone from "../assets/sound/vibenet_rington.mp3";
+import { useCall } from "../../context/CallContext";
+import ringtone from "../../assets/sound/vibenet_rington.mp3";
 
 const IncomingCallModal = () => {
   const audioRef = useRef(null);

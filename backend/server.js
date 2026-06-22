@@ -34,7 +34,6 @@ const io = new Server(server, {
     origin: process.env.FRONTEND_URL,
     // origin: [
     //   "http://localhost:5173",
-    //   "https://res-toe-cast-satellite.trycloudflare.com",
     // ],
     // origin:'*',
     credentials: true,
@@ -55,7 +54,6 @@ app.use(errorHandler);
 
 
 initSocket(io);
-
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);

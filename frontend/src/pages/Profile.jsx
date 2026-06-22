@@ -10,19 +10,27 @@ import { FaPlus } from "react-icons/fa";
 import { FaUserCircle, FaInfoCircle, FaEdit } from "react-icons/fa";
 import { RiDeleteBin2Line } from "react-icons/ri";
 import { handleError } from '../utils/errorHandler';
-import Spinner from "../components/Spinner";
+import Spinner from "../components/common/Spinner";
 import { FiMoreVertical, FiX } from "react-icons/fi";
 import { MdAddBox } from "react-icons/md";
-import FollowingModal from "../components/FollowingModal";
-import FollowersModal from "../components/FollowersModal";
-import FollowRequestModel from "../components/FollowRequestModel";
+import FollowingModal from "../components/profile/FollowingModal";
+import FollowersModal from "../components/profile/FollowersModal";
+import FollowRequestModel from "../components/profile/FollowRequestModel";
+
 import LoadingDots from "../components/common/LoadingDots";
 import { getProfileData } from "../services/userService";
 import { postDelete, getPersonalPosts, createPost } from "../services/postService";
 
 import { storyUpload } from '../services/storyService'
 
-import { removeFollower, sendFollow, sendUnFollow ,followBack} from '../services/followService'
+import { removeFollower, sendFollow, sendUnFollow, followBack } from '../services/followService'
+
+import ProfileInfo from "../components/profile/ProfileInfo";
+import ProfileCompletion from "../components/profile/ProfileCompletion";
+
+import PrivateProfile from "../components/profile/PrivateProfile";
+import CreatePost from "../components/profile/CreatePost";
+import ProfilePosts from "../components/profile/ProfilePosts";
 
 // Start of component
 const Profile = () => {
@@ -177,6 +185,8 @@ const Profile = () => {
 
         const response = await getProfileData(id)
 
+
+
         setProfileData(response.data.user);
         setMutualCount(response.data.mutualCount);
         setMutualUserName(response.data.mutualList);
@@ -190,19 +200,13 @@ const Profile = () => {
   }, [user]);
 
 
-
-
-
-
-
-
   useEffect(() => {
     if (!user) return;
     if (!id) return;
 
     const fetchPostData = async () => {
       try {
-      
+
 
         const res = await getPersonalPosts(id)
         setPosts(res.data.posts || []);
@@ -355,7 +359,7 @@ const Profile = () => {
 
 
     try {
-    
+
 
       const res = await removeFollower(followerId)
 
@@ -462,112 +466,36 @@ const Profile = () => {
   return (
     <div className="profile-container">
 
-
-
-
       {/* Profile Section */}
-      <div className="profile-header flex justify-between items-start w-full px-4 sm:px-6 mt-4">
-        {storyLoading && (
-          <div className="fixed right-4  top-15  bg-black text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
+      <ProfileInfo
+        profileData={profileData}
 
-            <span className="w-3 h-3 bg-green-400 rounded-full animate-bounce"></span>
+        storyLoading={storyLoading}
 
-            <span className="text-sm font-medium">
-              Story Uploading...
-            </span>
+        uploadStory={uploadStory}
 
-          </div>
-        )}
+        handleProfileStoryClick={handleProfileStoryClick}
 
-        <div
-          className={`flex items-center gap-4 ${uploadStory ? "cursor-pointer" : "cursor-default"}`}
-          onClick={handleProfileStoryClick}
-        >
-          {/* Profile Image */}
-          <img
-            src={
-              profileData.profilePic?.url ||
-              "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
-            }
-            alt="Profile"
-            className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 ${uploadStory ? "border-pink-500" : "border-gray-300"
-              }`}
-          />
+        isOwnProfile={isOwnProfile}
 
-          {/* Profile Text Info */}
-          <div>
-            <h3 className="text-lg sm:text-xl font-semibold">
-              {profileData.username}
-            </h3>
-            <p className="text-gray-600 text-sm sm:text-base">
-              {profileData.bio || "No bio available"}
-            </p>
+        handleEdit={handleEdit}
 
-            {isOwnProfile ? (
-              <div className="flex items-center gap-3 mt-2">
-                <span
-                  onClick={handleEdit}
+        setShowFollowRequest={setShowFollowRequest}
 
-                  className="px-3 py-1 border rounded-2xl  text-sm font-medium hover:bg-gray-100 transition shadow cursor-pointer"
-                >
-                  Edit Profile
-                </span>
+        showFollowRequest={showFollowRequest}
 
-                {profileData.followRequests?.length > 0 && (
-                  <button
-                    onClick={() => setShowFollowRequest(!showFollowRequest)}
-                    className="border px-3 py-1 shadow hover:bg-gray-100 rounded  "
-                  >
-                    <span className="font-bold">{profileData.followRequests?.length}</span>
-                    <span>Requests</span>
-                  </button>
-                )}
+        FollowBack={FollowBack}
 
-              </div>
-            ) : (
-              <div>
-                {/* <span>
-                requests
-                {profileData.followRequests.map((data,index)=>(
-                <div>{data.user._id}       {data.status}   {data.user.username}</div>
-                
-                ))}
-               </span> */}
-                {FollowBack && !isFollowing ?
-                  <button onClick={() => handleFollowBack(profileData._id)} className={`mt-2 px-4 py-1 text-sm font-bold rounded-full transition ${isFollowing
-                    ? "bg-gray-200 text-black border"
-                    : "bg-blue-500 text-white"
-                    }`}>Follow Back</button>
-                  :
-                  <button
-                    className={`mt-2 px-4 py-1 text-sm font-bold rounded-full transition ${isFollowing
-                      ? "bg-gray-200 text-black border"
-                      : "bg-blue-500 text-white"
-                      }`}
-                    onClick={() =>
-                      isFollowing
-                        ? handleUnfollow(profileData._id)
-                        : handleFollow(profileData._id)
-                    }
-                  >
+        isFollowing={isFollowing}
 
+        handleFollowBack={handleFollowBack}
 
-                    {isFollowing
-                      ? "Following"
-                      : followRequest
-                        ? "Request Sent"
-                        : FollowBack
-                          ? "Follow ack"
-                          : "follow"
-                    }
+        handleFollow={handleFollow}
 
-                  </button>
-                }
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        handleUnfollow={handleUnfollow}
+
+        followRequest={followRequest}
+      />
 
       <div className="text-end mt-4 mb-5">
         <div className="profile-stats">
@@ -589,33 +517,37 @@ const Profile = () => {
 
       </div>
 
-
       {!isOwnProfile && (
         mutualCount > 0 ? (
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-3 mt-3">
 
-
-            <div className="flex -space-x-2">
-              {mutualUsernames.slice(0, 2).map((user, index) => (
+            {/* Mutual Profile Images */}
+            <div className="flex -space-x-3">
+              {mutualUsernames.slice(0, 3).map((user, index) => (
                 <img
                   key={index}
-                  src={user.profilePic}
+                  src={
+                    user.profilePic ||
+                    "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
+                  }
                   alt={user.username}
-                  className="w-7 h-7 rounded-full border border-white object-cover"
+                  className="w-6 h-6 rounded-full border-2 border-white object-cover shadow-sm"
                 />
               ))}
             </div>
 
-
-            <p className="text-sm text-gray-500">
+            {/* Mutual Text */}
+            <p className="text-xs text-gray-500 leading-tight">
               Followed by{" "}
-              <span className="font-semibold">{mutualUsernames[0]?.username}</span>
+              <span className="font-semibold text-gray-700">
+                {mutualUsernames[0]?.username}
+              </span>
 
               {mutualCount > 1 && (
                 <>
                   {" "}and{" "}
                   <span
-                    className="font-semibold text-blue-400 cursor-pointer"
+                    className="font-semibold text-gray-700 cursor-pointer hover:underline"
                     onClick={() => {
                       setAllMutualUsers(mutualUsernames);
                       setShowMutualPopup(true);
@@ -628,7 +560,9 @@ const Profile = () => {
             </p>
           </div>
         ) : (
-          <p className="text-sm text-gray-400 mt-2">No mutual connections</p>
+          <p className="text-xs text-gray-400 mt-2">
+            Suggested for you
+          </p>
         )
       )}
 
@@ -642,7 +576,7 @@ const Profile = () => {
               {allMutualUsers.map((user, index) => (
                 <li key={index} className="popup-user">
                   <img
-                    src={user.profilePic}
+                    src={user.profilePic || "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"}
                     alt={user.username}
                     className="popup-avatar"
                   />
@@ -683,6 +617,7 @@ const Profile = () => {
         </div>
       )} */}
 
+
       {isPrivateAccount && !canViewPosts ? (
         ""
       ) :
@@ -690,9 +625,6 @@ const Profile = () => {
           <FollowersModal profileData={profileData} isOwnProfile={isOwnProfile} removeModal={removeModal} setRemoveModal={setRemoveModal} handleRemove={handleRemove} setShowFollowers={setShowFollowers} />
         )
       }
-
-
-
 
       {isPrivateAccount && !canViewPosts ? (
         ""
@@ -718,10 +650,6 @@ const Profile = () => {
         </div>
       )}
 
-
-      {/* Upload Story */}
-
-
       {isOwnProfile && (
         <div className="my-3">
           <input
@@ -731,7 +659,6 @@ const Profile = () => {
             onChange={handleUpload}
             style={{ display: "none" }}
           />
-          {/* <button className="btn btn-success ms-2" onClick={handleUpload}>Upload Story</button> */}
         </div>
       )}
 
@@ -803,25 +730,7 @@ const Profile = () => {
 
       {isPrivateAccount && !canViewPosts ? (
 
-        <div className="flex items-center justify-center py-20 px-4">
-
-          <div className="bg-white shadow-xl rounded-3xl border border-gray-100 p-10 text-center max-w-md w-full">
-
-            <div className="text-6xl mb-4">
-              🔒
-            </div>
-
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              Private Account
-            </h2>
-
-            <p className="text-gray-500 text-sm">
-              Follow this account to see their posts and updates.
-            </p>
-
-          </div>
-
-        </div>
+        <PrivateProfile />
 
       ) : (
 
@@ -829,374 +738,49 @@ const Profile = () => {
 
           {mpost ? (
 
-            <div className="max-w-7xl mx-auto">
+            <ProfilePosts
+              posts={posts}
 
-              {posts && posts.length > 0 ? (
+              isOwnProfile={isOwnProfile}
 
-                <>
-                  {/* POSTS GRID */}
-                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 sm:gap-3">
+              selectedImage={selectedImage}
+              setSelectedImage={setSelectedImage}
 
-                    {posts.map((post) => (
+              expandedPostId={expandedPostId}
+              setExpandedPostId={setExpandedPostId}
 
-                      <div
-                        key={post._id}
-                        className="group relative cursor-pointer"
-                      >
+              openMenuId={openMenuId}
+              toggleMenu={toggleMenu}
 
-                        {/* IMAGE */}
-                        <div
-                          className="aspect-square overflow-hidden rounded-md sm:rounded-2xl bg-gray-200"
-                          onClick={() => setSelectedImage(post)}
-                        >
+              handlePostDelete={handlePostDelete}
 
-                          <img
-                            src={post.image}
-                            alt="Post"
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
-
-                        </div>
-
-                        {/* OVERLAY */}
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition duration-300 rounded-md sm:rounded-2xl flex items-center justify-center">
-
-                          <span className="text-white text-sm font-semibold">
-                            View
-                          </span>
-
-                        </div>
-
-                        {/* CAPTION */}
-                        <div className="mt-2 px-1">
-
-                          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
-
-                            {post.text.length > 100 ? (
-                              <>
-                                {expandedPostId === post._id
-                                  ? post.text
-                                  : post.text.slice(0, 20) + "... "}
-
-                                <span
-                                  onClick={() =>
-                                    setExpandedPostId(
-                                      expandedPostId === post._id
-                                        ? null
-                                        : post._id
-                                    )
-                                  }
-                                  className="text-blue-500 cursor-pointer ml-1 hover:underline"
-                                >
-                                  {expandedPostId === post._id
-                                    ? "less"
-                                    : "more"}
-                                </span>
-                              </>
-                            ) : (
-                              post.text
-                            )}
-
-                          </p>
-
-                        </div>
-
-                        {/* MENU */}
-                        {isOwnProfile && (
-
-                          <div className="absolute top-2 right-2 z-20">
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleMenu(post._id);
-                              }}
-                              aria-label="Toggle menu"
-                              className="bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full backdrop-blur-sm transition"
-                            >
-                              <FiMoreVertical size={14} />
-                            </button>
-
-                            {openMenuId === post._id && (
-
-                              <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-
-                                <button
-                                  onClick={() =>
-                                    handlePostDelete(post._id)
-                                  }
-                                  className="flex items-center gap-2 w-full px-4 py-3 text-red-500 hover:bg-red-50 transition text-sm"
-                                >
-                                  <RiDeleteBin2Line />
-                                  Delete
-                                </button>
-
-                              </div>
-
-                            )}
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                    ))}
-
-                  </div>
-
-                  {/* IMAGE MODAL */}
-                  {selectedImage && (
-
-                    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center px-2 sm:px-4">
-
-                      <div className="relative w-full max-w-5xl">
-
-                        {/* CLOSE BUTTON */}
-                        <button
-                          className="absolute -top-12 right-0 text-white hover:text-gray-300 transition"
-                          onClick={() => setSelectedImage(null)}
-                        >
-                          <FiX size={30} />
-                        </button>
-
-                        {/* MODAL CONTENT */}
-                        <div className="bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
-
-                          {/* IMAGE */}
-                          <div className="flex-1 bg-black flex items-center justify-center">
-
-                            <img
-                              src={selectedImage.image}
-                              alt="Selected Post"
-                              className="w-full h-full max-h-[75vh] object-contain"
-                            />
-
-                          </div>
-
-                          {/* CAPTION */}
-                          <div className="w-full md:w-[350px] p-5 overflow-y-auto">
-
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                              Caption
-                            </h3>
-
-                            <p className="text-gray-600 text-sm leading-relaxed">
-                              {selectedImage.text}
-                            </p>
-
-                          </div>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  )}
-
-                </>
-
-              ) : (
-
-                /* EMPTY STATE */
-                <div className="flex items-center justify-center py-24">
-
-                  <div className="bg-white rounded-3xl shadow-lg p-10 text-center max-w-md w-full border border-gray-100">
-
-                    <div className="text-6xl mb-4">
-                      📸
-                    </div>
-
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                      No Posts Yet
-                    </h2>
-
-                    <p className="text-gray-500 mb-6">
-                      Start sharing your moments.
-                    </p>
-
-                    {isOwnProfile && (
-
-                      <button
-                        className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-xl shadow-md hover:scale-105 transition"
-                        onClick={() => setMpost(false)}
-                      >
-                        Create First Post
-                      </button>
-
-                    )}
-
-                  </div>
-
-                </div>
-
-              )}
-
-            </div>
+              setMpost={setMpost}
+            />
 
           ) : (
 
             isOwnProfile && (
 
-              <div className="max-w-2xl mx-auto">
+              <CreatePost
+                postImage={postImage}
+                setPostImage={setPostImage}
 
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                captionText={captionText}
+                setCaptionText={setCaptionText}
 
-                  {/* HEADER */}
-                  <div className="p-6 border-b bg-gradient-to-r from-pink-500 to-purple-500 text-white">
+                imageSelected={imageSelected}
+                setImageSelected={setImageSelected}
 
-                    <h2 className="text-2xl font-bold">
-                      Create New Post
-                    </h2>
+                validated={validated}
 
-                    <p className="text-sm opacity-90 mt-1">
-                      Share photos with your friends
-                    </p>
+                handlePostImage={handlePostImage}
 
-                  </div>
+                validateAndPost={validateAndPost}
 
-                  <div className="p-6">
+                setMpost={setMpost}
 
-                    {/* IMAGE UPLOAD */}
-                    <div className="mb-6">
-
-                      <div className={`border-2 border-dashed rounded-3xl p-8 text-center transition-all
-                  ${!validated && !imageSelected
-                          ? "border-red-400 bg-red-50"
-                          : "border-gray-300 hover:border-pink-400"
-                        }`}>
-
-                        <i className="bi bi-images text-5xl text-gray-400"></i>
-
-                        <p className="mt-4 text-gray-600 font-medium">
-                          Drag photo here
-                        </p>
-
-                        <label
-                          htmlFor="postImage"
-                          className="inline-block mt-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-5 py-2 rounded-xl cursor-pointer hover:scale-105 transition"
-                        >
-                          Select from device
-                        </label>
-
-                        <input
-                          type="file"
-                          id="postImage"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            handlePostImage(e);
-                            setImageSelected(true);
-                          }}
-                        />
-
-                        {/* PREVIEW */}
-                        {postImage && (
-
-                          <div className="relative mt-6">
-
-                            <img
-                              src={URL.createObjectURL(postImage)}
-                              alt="Preview"
-                              className="w-full max-h-[450px] object-cover rounded-2xl shadow-md"
-                            />
-
-                            <button
-                              className="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-black"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setPostImage(null);
-                                setImageSelected(false);
-                              }}
-                            >
-                              ✕
-                            </button>
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                      {!validated && !imageSelected && (
-
-                        <p className="text-red-500 text-sm mt-2">
-                          Please select an image to continue
-                        </p>
-
-                      )}
-
-                    </div>
-
-                    {/* CAPTION */}
-                    <div className="mb-6">
-
-                      <textarea
-                        rows="5"
-                        placeholder="Write a caption..."
-                        value={captionText}
-                        onChange={(e) => {
-                          setPostText(e.target.value);
-                          setCaptionText(e.target.value);
-                        }}
-                        className={`w-full rounded-2xl border p-4 outline-none resize-none transition
-                    ${!validated &&
-                            captionText.trim() === ""
-                            ? "border-red-400"
-                            : "border-gray-300 focus:border-pink-500"
-                          }`}
-                      />
-
-                      <div className="flex justify-between items-center mt-2 text-sm text-gray-500">
-
-                        <span>✨ Express yourself</span>
-
-                        <span>
-                          {captionText.length}/2200
-                        </span>
-
-                      </div>
-
-                      {!validated &&
-                        captionText.trim() === "" && (
-
-                          <p className="text-red-500 text-sm mt-2">
-                            Caption is required
-                          </p>
-
-                        )}
-
-                    </div>
-
-                    {/* ACTION BUTTONS */}
-                    <div className="flex justify-end gap-3">
-
-                      <button
-                        className="px-5 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 transition"
-                        onClick={() => setMpost(true)}
-                      >
-                        Cancel
-                      </button>
-
-                      <button
-                        className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-2 rounded-xl shadow-md hover:scale-105 transition disabled:opacity-50"
-                        onClick={validateAndPost}
-                        disabled={
-                          !imageSelected ||
-                          captionText.trim() === ""
-                        }
-                      >
-                        {createPostStatus ? (<LoadingDots text="Sharing Post" />) : 'Share Post'}
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
+                createPostStatus={createPostStatus}
+              />
 
             )
 
@@ -1207,70 +791,11 @@ const Profile = () => {
       )}
 
 
-
-
-
-
-
-
       {/* Suggestion Boxes */}
-      {isOwnProfile && (
-        <div className="suggestion-section mt-5 px-3">
-          <h4 className="mb-4 fw-bold text-center">Complete your profile</h4>
-          <div className="row justify-content-center g-3">
-
-            {/* Upload profile picture */}
-            <div className="col-md-4 col-sm-6">
-              <div className="suggestion-box text-center p-4 rounded-4 shadow-sm border">
-                <div className="icon-wrapper mb-3">
-                  <FaUserCircle size={48} className="text-primary" />
-                </div>
-                <h6 className="fw-semibold mb-3">Upload Profile Picture</h6>
-                <button
-                  className="btn btn-sm btn-outline-primary rounded-pill px-4"
-                  onClick={handleEdit}
-                >
-                  Upload
-                </button>
-              </div>
-            </div>
-
-            {/* Add Bio */}
-            <div className="col-md-4 col-sm-6">
-              <div className="suggestion-box text-center p-4 rounded-4 shadow-sm border">
-                <div className="icon-wrapper mb-3">
-                  <FaInfoCircle size={48} className="text-info" />
-                </div>
-                <h6 className="fw-semibold mb-3">Add a Bio</h6>
-                <button
-                  className="btn btn-sm btn-outline-info rounded-pill px-4"
-                  onClick={handleEdit}
-                >
-                  Add Bio
-                </button>
-              </div>
-            </div>
-
-
-            {/* Edit Profile */}
-            <div className="col-md-4 col-sm-6">
-              <div className="suggestion-box text-center p-4 rounded-4 shadow-sm border">
-                <div className="icon-wrapper mb-3">
-                  <FaEdit size={48} className="text-success" />
-                </div>
-                <h6 className="fw-semibold mb-3">Edit Profile</h6>
-                <button
-                  className="btn btn-sm btn-outline-success rounded-pill px-4"
-                  onClick={handleEdit}
-                >
-                  Edit
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
+      <ProfileCompletion
+        isOwnProfile={isOwnProfile}
+        handleEdit={handleEdit}
+      />
     </div>
   );
 };

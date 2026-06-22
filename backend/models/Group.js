@@ -13,14 +13,15 @@ const GroupSchema = new mongoose.Schema({
     icon: {
         public_id: {
             type: String,
-            default: "default_icon_public_id"
+            default: "default_icon_public_id",
+            required:true
         },
         url: {
             type: String,
-            default: "https://cdn-icons-png.flaticon.com/512/615/615075.png"
+            default: "https://cdn-icons-png.flaticon.com/512/615/615075.png",
+            required:true
         }
     },
-
     creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -29,13 +30,15 @@ const GroupSchema = new mongoose.Schema({
     admins: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
+            ref: "User",
+            required: true,
         }
     ],
     members: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
+            ref: "User",
+            required: true
         }
     ],
     privacy: {

@@ -28,7 +28,9 @@ const registerUser = async ({ name, email, password, username }) => {
     const userExists = await User.findOne({ email });
     // console.log(userExists)
     if (userExists) {
-        throw new Error("User already exists");
+       const error=new Error("User already exists");
+       error.statusCode=409
+       throw error;
     }
 
     const newUser = new User({ name, email, username });
@@ -168,12 +170,34 @@ const googleCallBack = async ({ _id, username, email }) => {
 
         // console.log("chat created:", chat);
 
+          const welcomeMessage = `👋 Welcome to VibeNet, ${username}!
+
+I'm VibeBot, your AI assistant.
+
+🚀 Get Started:
+
+• Add a profile picture and bio
+• Create your first image post
+• Upload a story using the '+' button on your profile
+• Follow users and discover new people
+• Chat, create groups, and start video calls
+• Get notifications for likes, comments, follows, and messages
+
+🔒 Privacy:
+
+• Public Account: Anyone can view your profile and posts.
+• Private Account: Non-followers can only see your follower and following counts. Your posts remain hidden until you approve their follow request.
+
+💡 Need help? Just send me a message anytime.
+
+Enjoy your journey on VibeNet! 🎉
+`
         //  Send welcome message
         const message = await Message.create({
             chatId: chat._id,
             sender: BOT_USER_ID,
             receiver: googleAuthUser._id,
-            text: "👋 Welcome to VibeNet! I'm your assistant bot. Feel free to ask anything.",
+            text: welcomeMessage,
         });
 
         // console.log("message sent:", message);

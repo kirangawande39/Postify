@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import {
   FaHome,
   FaUser,
@@ -10,12 +10,12 @@ import {
   FaCog,
 } from "react-icons/fa";
 
-import "../assets/css/SidebarNavbar.css";
+import "../../assets/css/SidebarNavbar.css";
 
 import { toast } from "react-toastify";
-import { handleError } from "../utils/errorHandler";
-import { userPrivacy } from "../services/userService";
-import { logoutUser } from "../services/authService";
+import { handleError } from "../../utils/errorHandler";
+import { userPrivacy } from "../../services/userService";
+import { logoutUser } from "../../services/authService";
 
 const SidebarNavbar = ({ isPrivateStatus }) => {
   const { user, logout } = useContext(AuthContext);

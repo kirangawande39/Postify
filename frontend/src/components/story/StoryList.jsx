@@ -1,5 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../assets/css/StoryList.css";
+import "../../assets/css/StoryList.css";
 import {
   FaPlus,
 } from "react-icons/fa";

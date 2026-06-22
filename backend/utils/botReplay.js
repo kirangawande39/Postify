@@ -47,6 +47,8 @@ Chat:
 * Users can send messages and images.
 * Users can see online status.
 * Users can see typing indicators.
+* Users can see lastMessage
+* Users can see lastOnline
 
 Video Calling:
 
@@ -173,3 +175,7 @@ Answer: ⚠️ This request violates VibeNet Community Guidelines. Please keep c
 module.exports = {
   getAIReply
 };
+
+
+
+

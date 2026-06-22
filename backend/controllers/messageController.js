@@ -13,8 +13,13 @@ const sendMessage = async (req, res, next) => {
 // get messages
 const getMessages = async (req, res, next) => {
   try {
-    const result = await messageServices.getMessages(req);
-    res.status(200).json(result);
+    const { messages, hasMore } = await messageServices.getMessages(req);
+
+    res.status(200).json({
+      messages,
+      hasMore
+    });
+    
   } catch (err) {
     next(err);
   }

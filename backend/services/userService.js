@@ -126,12 +126,17 @@ const getSuggestedUsers = async (req) => {
 
     const following = currentUser.following || [];
 
+    // console.log("Following IN Suggestion page:", following)
+
     const pipeline = [
         {
             $match: {
-                _id: { $ne: currentUser._id, $nin: following }
+                _id: {
+                    $nin: [currentUser._id, ...following]
+                }
             }
         },
+
         {
             $addFields: {
                 mutualIds: {
@@ -141,9 +146,12 @@ const getSuggestedUsers = async (req) => {
                         else: []
                     }
                 },
+
                 popularity: { $size: "$followers" }
             }
         },
+
+
         {
             $lookup: {
                 from: "users",
@@ -152,18 +160,19 @@ const getSuggestedUsers = async (req) => {
                 as: "mutualUsers"
             }
         },
+
         {
             $project: {
                 _id: 1,
                 username: 1,
                 name: 1,
                 profilePic: 1,
-                mutualCount: { $size: "$mutualIds" },
+                mutualCount: { $size:"$mutualIds" },
                 mutualUsernames: {
                     $map: {
                         input: "$mutualUsers",
                         as: "user",
-                        in: "$$user.username"
+                        in: "$$user.name"
                     }
                 }
             }
@@ -178,6 +187,7 @@ const getSuggestedUsers = async (req) => {
     ];
 
     return await User.aggregate(pipeline);
+    
 };
 
 // const uploadProfilePic = async (req) => {

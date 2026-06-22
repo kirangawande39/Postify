@@ -1,19 +1,21 @@
 import { useState, useContext, useEffect, useRef } from "react";
-import PostCard from "../components/PostCard";
+import PostCard from "../components/post/PostCard";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../assets/css/Home.css";
-import StoryList from "../components/StoryList";
+import StoryList from "../components/story/StoryList";
 import { AuthContext } from "../context/AuthContext";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/common/Spinner";
 import { useNavigate, Link } from "react-router-dom";
 import { handleError } from '../utils/errorHandler';
 import { toast } from 'react-toastify';
 import "../assets/css/StoryList.css";
-import StoryViewer from "../components/StoryViewer"
+import StoryViewer from "../components/story/StoryViewer";
+import UsersSuggestions from "../components/suggestions/UsersSuggestions";
+import VibeBoat from "../components/common/VibeBoat";
 
 import { getSuggestion } from '../services/userService'
 import { sendFollow, sendUnfollow, getPostsData } from "../services/postService";
-import { getStorys, markSeen , likeStory , unLikeStory} from "../services/storyService";
+import { getStorys, markSeen, likeStory, unLikeStory } from "../services/storyService";
 
 import LoadingDots from "../components/common/LoadingDots";
 const isVideo = (url) => url?.match(/\.(mp4|webm|ogg)$/i);
@@ -47,6 +49,8 @@ const Home = () => {
 
   // console.log("storyUserIds", storyUserIds);
 
+  // console.log("Posts:",posts)
+
 
 
   // story list 
@@ -79,7 +83,7 @@ const Home = () => {
       try {
 
         const res = await getSuggestion();
-      
+
         setSuggestions(res.data);
       } catch (err) {
         console.error("Error fetching suggestions:", err);
@@ -140,6 +144,10 @@ const Home = () => {
     const handleScroll = () => {
       const nearBottom =
         window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+      // console.log(" window.innerHeight ", window.innerHeight )
+      // console.log("window.scrollY",window.scrollY)
+      // console.log("InnerHeight",document.body.offsetHeight)
+      // console.log("nearBottom::",nearBottom)
       if (nearBottom) {
         fetchPostData();
       }
@@ -147,6 +155,8 @@ const Home = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [page, hasMore]);
+
+
 
   const fetchPostData = async () => {
     if (loadingMore || !hasMore) return;
@@ -168,15 +178,14 @@ const Home = () => {
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchStories()
-    
-    },[])
-    
-    const fetchStories = async () => {
-      try {
-        const res =await getStorys();
-        setStories(res.data.stories);
+  }, [])
+
+  const fetchStories = async () => {
+    try {
+      const res = await getStorys();
+      setStories(res.data.stories);
     } catch (err) {
       handleError(err)
     }
@@ -469,47 +478,7 @@ const Home = () => {
     <div className="vibenet-home">
 
       {isMobile && showSuggestionModal && (
-        <div className="vibenet-suggestion-modal-backdrop">
-          <div className="vibenet-suggestion-modal">
-            <div className="d-flex">
-              <h5 className="font-bold  text-[2rem]">👋 Follow minimum 5 people to get started</h5>
-              <button className="vibenet-close-suggestion " onClick={() => setShowSuggestionModal(false)}>Close</button>
-            </div>
-            <div className="vibenet-suggestion-list-scroll">
-              {(showAll ? suggestions : suggestions.slice(0, 10)).map((sugg) => (
-                <div className="vibenet-suggestion-card" key={sugg._id}>
-                  <Link to={`/profile/${sugg._id}`} className="vibenet-suggestion-link">
-                    <img
-                      src={
-                        sugg.profilePic?.url ||
-                        "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jzg"
-                      }
-                      alt={sugg.username}
-                      className="vibenet-suggestion-avatar"
-                    />
-                    <div className="vibenet-suggestion-info">
-                      <span className="vibenet-suggestion-username">{sugg.username}</span>
-                    </div>
-                  </Link>
-                  <button
-                    className={`vibenet-follow-btn ${sugg.isFollowing ? "vibenet-following" : ""}`}
-                    onClick={() =>
-                      sugg.isFollowing
-                        ? handleUnfollow(sugg._id)
-                        : handleFollow(sugg._id)
-                    }
-                  >
-                    {sugg.isFollowing ? "Following" : "Follow"}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-          </div>
-
-
-        </div>
-
+        <UsersSuggestions setShowSuggestionModal={setShowSuggestionModal} suggestions={suggestions} showAll={showAll} role={"mobile"} />
       )}
 
       <StoryViewer
@@ -533,8 +502,10 @@ const Home = () => {
         setShowViewers={setShowViewers}
       />
 
+
       <div className="vibenet-main">
         <div className="vibenet-feed">
+          
           <div className="vibenet-stories">
             <StoryList stories={stories} hasSeenAllStoriesCurrentUser={hasSeenAllStoriesCurrentUser} currentUserStories={currentUserStories} currentUser={currentUser} otherUsersStories={otherUsersStories} currentUserId={currentUserId} isVideo={isVideo} openStory={openStory}
               isSeen={isSeen} />
@@ -549,21 +520,9 @@ const Home = () => {
             </button>
           )}
 
-          {chatBoat &&
-            <div className=" fixed bottom-10 right-5 
-         rounded-full 
-        p-3 cursor-pointer 
-        z-50">
-              <span className="ml-10 font-extrabold text-2xl" onClick={() => setChatBoat(false)}>×</span>
-              <img
-                onClick={() => navigate(`/chats`)}
-                src="https://cdn3d.iconscout.com/3d/premium/thumb/chatbot-11798649-9666248.png"   // apna icon daal do
-                className="w-20 h-20"
-                alt="Chat Logo"
-              />
+          {chatBoat && <VibeBoat setChatBoat={setChatBoat}/> }
 
-            </div>
-          }
+
 
           <div className="vibenet-posts">
             {loading ? (
@@ -573,7 +532,7 @@ const Home = () => {
             ) : posts.length > 0 ? (
               <>
                 {posts.map((post, index) => (
-                  <PostCard key={post._id} post={post} storyUserIds={storyUserIds} openStory={openStory} isSeen={isSeen} />
+                  <PostCard key={post._id} post={post} storyUserIds={storyUserIds} openStory={openStory} isSeen={isSeen} currentUserId={currentUserId} />
                 ))}
 
                 {loadingMore && (
@@ -586,94 +545,12 @@ const Home = () => {
               <div className="vibenet-no-posts">No posts available</div>
             )}
           </div>
+
+          
         </div>
 
-        <div className="vibenet-sidebar">
-          <div className="vibenet-user-card">
-
-            <img
-              src={
-                user?.profilePic?.url ||
-                "https://png.pngtree.com/png-vector/20240529/ourmid/pngtree-the-logo-of-an-avatar-profile-outlines-in-an-icon-circle-vector-png-image_6959193.png"
-              }
-              alt={user.username}
-              className="vibenet-user-avatar rounded-circle"
-              onClick={(e) => {
-                if (storyUserIds.includes(user._id)) {
-                  e.preventDefault();
-                  openStory(user._id);
-                }
-              }}
-            />
-
-
-            <div className="vibenet-user-info">
-              <Link to={`/profile/${user._id}`} className="vibenet-username">
-                {user.username}
-
-              </Link>
-              <span className="vibenet-name">{user.name}</span>
-            </div>
-          </div>
-
-
-
-
-          <div className="vibenet-suggestions">
-            <div className="vibenet-suggestions-header">
-              <span>Suggestions For You</span>
-              {suggestions.length > 7 && (
-                <button
-                  onClick={() => setShowAll(!showAll)}
-                  className="vibenet-show-all"
-                >
-                  {showAll ? "See Less" : "See All"}
-                </button>
-              )}
-            </div>
-
-
-            {suggestions.length === 0 ? (
-              <p className="vibenet-no-suggestions">No suggestions found</p>
-            ) : (
-              <>
-                {(showAll ? suggestions : suggestions.slice(0, 7)).map((sugg) => (
-                  <div className="vibenet-suggestion-card" key={sugg._id}>
-                    <Link to={`/profile/${sugg._id}`} className="vibenet-suggestion-link">
-                      <img
-                        src={
-                          sugg.profilePic?.url ||
-                          "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
-                        }
-                        alt={sugg.username}
-                        className="vibenet-suggestion-avatar"
-                      />
-                      <div className="vibenet-suggestion-info">
-                        <span className="vibenet-suggestion-username">{sugg.username}</span>
-                        <span className="vibenet-suggestion-mutual">
-                          {sugg.mutualUsernames?.length > 0
-                            ? `Followed by ${sugg.mutualUsernames[0]}${sugg.mutualUsernames.length > 1 ? ` + ${sugg.mutualUsernames.length - 1} more` : ''}`
-                            : 'New to vibenet'}
-                        </span>
-                      </div>
-                    </Link>
-                    <button
-                      className={`vibenet-follow-btn ${sugg.isFollowing ? "vibenet-following" : ""}`}
-                      onClick={() =>
-                        sugg.isFollowing
-                          ? handleUnfollow(sugg._id)
-                          : handleFollow(sugg._id)
-                      }
-                    >
-                      {sugg.isFollowing ? "Following" : "Follow"}
-                    </button>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-
-        </div>
+        <UsersSuggestions showAll={showAll} suggestions={suggestions} setShowSuggestionModal={setShowSuggestionModal} role={"desktop"} user={user} setShowAll={setShowAll} />
+            
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React from "react";
 import { FaTimes } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
-import { followDecline, followAccept } from "../services/followService";
+import { followDecline, followAccept } from "../../services/followService";
 
 const FollowRequestModel = ({ onClose, profileData, setProfileData, setFollowRequest }) => {
 

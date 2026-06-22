@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import socket from "../socket";
+import socket from "../../socket";
 import { RiDeleteBin2Line } from "react-icons/ri";
 
-import "../assets/css/ChatBox.css"
+import "../../assets/css/ChatBox.css"
 import { MdInsertPhoto, MdArrowBack } from "react-icons/md";
 import { IoVideocam } from "react-icons/io5"
-import { handleError } from '../utils/errorHandler';
+import { handleError } from '../../utils/errorHandler';
 import { toast } from 'react-toastify';
-import Spinner from "./Spinner";
+import Spinner from "../common/Spinner";
 
-import { useCall } from "../context/CallContext";
-import { createOrFetchChat, sendMessage, fileChange, getChatMessages, markSeenChatMessages } from "../services/chatService";
+import { useCall } from "../../context/CallContext";
+import { createOrFetchChat, sendMessage, fileChange, getChatMessages, markSeenChatMessages } from "../../services/chatService";
 
 
 const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack }) => {
@@ -128,17 +128,16 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
     try {
       setLoading(true);
 
+      let msgLengthBefore = messages.length;
+
       const res = await getChatMessages(chatId, pageNumber)
 
-      // console.log("chat Messages:", res.data)
-      if (res.data.lenght === 0) {
-        setHasMore(false);
-        return;
-      }
-
       setMessages(prev =>
-        pageNumber === 1 ? res.data : [...res.data, ...prev]
+        pageNumber === 1 ? res.data.messages : [...res.data.messages, ...prev]
       );
+
+      setHasMore(res.data.hasMore)
+
 
       socket.emit("join-chat", chatId);
     } catch (err) {
@@ -478,8 +477,6 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
             Load older messages
           </p>
 
-
-
         }
         {/* no latest msg avialable  */}
         {/* // console.log("🧾 Messages rendering:", messages) */}
@@ -525,7 +522,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
 
                   <div style={{ maxWidth: "60%" }}>
-                   
+
 
                     {msg.text &&
 
@@ -538,7 +535,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
                         </p>
 
 
-                     
+
                         <div className="text-muted text-end mt-1" style={{ fontSize: "0.75rem" }}>
                           {time}
                         </div>
@@ -560,7 +557,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
 
 
-                    
+
                     {msg.image?.url && (
                       <div className={`message-image-container ${isOwn ? "sender-image" : "receiver-image"}`}>
                         <img

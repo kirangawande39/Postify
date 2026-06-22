@@ -9,4 +9,9 @@ const CommentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+CommentSchema.index({
+  post: 1,
+  createdAt: -1
+});
+
 module.exports = mongoose.model("Comment", CommentSchema);

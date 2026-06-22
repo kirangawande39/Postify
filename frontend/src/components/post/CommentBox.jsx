@@ -1,17 +1,17 @@
 import { useState, useContext, useEffect } from "react";
 import { FaPaperPlane } from "react-icons/fa";
-import "../assets/css/CommentBox.css";
+import "../../assets/css/CommentBox.css";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import { MdDeleteForever } from "react-icons/md";
-import socket from "../socket";
-import { handleError } from '../utils/errorHandler';
+import socket from "../../socket";
+import { handleError } from '../../utils/errorHandler';
 dayjs.extend(relativeTime);
-import Spinner from "./Spinner";
+import Spinner from "../common/Spinner";
 import { toast } from "react-toastify";
 
-import { getAllComents ,sendComment , deleteComment } from "../services/commentService";
+import { getAllComents ,sendComment , deleteComment } from "../../services/commentService";
 
 const CommentBox = ({ postId }) => {
   const { user, updateUser } = useContext(AuthContext);

@@ -25,7 +25,7 @@ const sendMessage = async (req) => {
   const savedMessage = await message.save();
 
   // update last message
-  
+
   await Chat.findByIdAndUpdate(chatId, { lastMessage: text });
 
   const receiverUser = await User.findById(receiverId).select("fcmToken");
@@ -111,7 +111,16 @@ const getMessages = async (req) => {
     .skip(skip)
     .limit(Number(limit));
 
-  return messages.reverse();
+
+
+  const totalMessages = await Message.countDocuments({ chatId })
+
+  // return messages.reverse();
+
+  return {
+    messages: messages.reverse(),
+    hasMore: skip + messages.length < totalMessages
+  }
 };
 
 
@@ -153,7 +162,7 @@ const deleteMessage = async (req) => {
 // send image
 const sendImage = async (req) => {
   // console.log("sendImage called");
-  
+
   const { chatId } = req.body;
 
   const sender = req.user.id;

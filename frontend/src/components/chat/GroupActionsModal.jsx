@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { handleError } from "../utils/errorHandler";
+import { handleError } from "../../utils/errorHandler";
 import { toast } from "react-toastify";
-import { addGroupMembers, deleteGroupMembers } from "../services/groupService";
+import { addGroupMembers, deleteGroupMembers } from "../../services/groupService";
 
 const GroupActionsModal = ({ onClose, sortedSidebarChats, group, user }) => {
   const [showFriendList, setShowFriendList] = useState(false);

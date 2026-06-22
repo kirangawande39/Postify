@@ -146,7 +146,8 @@ const getPostByIdService = async (id) => {
 
 // Get Posts by User
 const getPostsByUserIdService = async (userId) => {
-  const posts = await Post.find({ user: userId });
+
+  const posts = await Post.find({ user: userId }).sort({ createdAt: -1 })
 
   if (!posts.length) {
     return null;

@@ -18,12 +18,15 @@ export default defineConfig({
   ],
 
   server: {
-    allowedHosts: [
-      "https://vibe-net-two.vercel.app"
-    ],
+    // allowedHosts: [
+    //   "https://vibe-net-two.vercel.app"
+    // ],
     allowedHosts: [
       "http://localhost:5173"
     ],
+    // allowedHosts: [
+    //   "write-drink-resorts-standing.trycloudflare.com"
+    // ],
     
   },
 

@@ -1,19 +1,19 @@
 import { useState, useEffect, useContext, useRef } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import { AiFillLike } from "react-icons/ai";
 import { LiaCommentSolid } from "react-icons/lia";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import "../assets/css/PostCard.css";
+import "../../assets/css/PostCard.css";
 import CommentBox from "./CommentBox";
-import { handleError } from '../utils/errorHandler';
+import { handleError } from '../../utils/errorHandler';
 dayjs.extend(relativeTime);
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { sendLike , sendUnlike , sendFollow , sendUnfollow } from "../services/postService";
+import { sendLike , sendUnlike , sendFollow , sendUnfollow } from "../../services/postService";
 
-const PostCard = ({ post, storyUserIds, openStory }) => {
-  const [liked, setLiked] = useState(false);
+const PostCard = ({ post, storyUserIds, openStory ,  currentUserId }) => {
+  const [isLiked, setLiked] = useState(post.likes.includes(currentUserId));
   const [totalLikes, setTotalLikes] = useState(post.likes.length);
   const { user } = useContext(AuthContext);
 
@@ -47,7 +47,7 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
   };
 
   const handleLikeAndUnlike = async () => {
-    if (liked) {
+    if (isLiked) {
       await handleUnlike();
     } else {
       await handleLike();
@@ -60,7 +60,7 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
 
       triggerFlyingHearts();
     }
-    setLiked(!liked);
+    setLiked(!isLiked);
   };
 
   const handleLike = async () => {
@@ -192,7 +192,7 @@ const PostCard = ({ post, storyUserIds, openStory }) => {
           className="like-comments"
           style={{ display: "flex", justifyContent: "space-between" }}
         >
-          <h3 className={liked ? "like" : "unlike"} onClick={handleLikeAndUnlike}>
+          <h3 className={`${isLiked ? "like" : "unlike"}  cursor-pointer`} onClick={handleLikeAndUnlike}>
             <AiFillLike />
           </h3>
           <h3

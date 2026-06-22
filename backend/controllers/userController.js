@@ -63,6 +63,8 @@ const searchUsers = async (req, res, next) => {
 const getSuggestedUsers = async (req, res) => {
     try {
         const result = await userServices.getSuggestedUsers(req);
+
+        // console.log("getSuggestedUsers :",result)
         res.status(200).json(result);
     } catch (err) {
         console.error("Suggestion fetch failed:", err.message);

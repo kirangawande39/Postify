@@ -3,14 +3,14 @@ import { FaArrowLeft } from "react-icons/fa";
 import GroupDetailModal from "./GroupDetailModal";
 import { BiBold, BiDotsVerticalRounded } from "react-icons/bi";
 import GroupActionsModal from "./GroupActionsModal";
-import { handleError } from "../utils/errorHandler";
+import { handleError } from "../../utils/errorHandler";
 import dayjs from "dayjs";
-import socket from "../socket";
+import socket from "../../socket";
 import { useNavigate } from "react-router-dom";
 import { MdArrowBack } from "react-icons/md";
-import Spinner from "./Spinner";
-import '../assets/css/GroupChat.css'
-import { getGroupMessages ,sendGroupMessages } from "../services/groupService";
+import Spinner from "../common/Spinner";
+import '../../assets/css/GroupChat.css'
+import { getGroupMessages ,sendGroupMessages } from "../../services/groupService";
 
 const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedSidebarChats }) => {
     const [showGroupDetails, setShowGroupDetails] = useState(false);

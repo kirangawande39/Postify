@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     googleId: { type: String, default: null }, // For Google OAuth
 
-    // 🔑 Forgot password fields
+    //  Forgot password fields
     resetToken: { type: String },
     resetTokenExpires: { type: Date },
 
@@ -55,6 +55,7 @@ const UserSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId, ref: "Group"
       }
     ],
+    
     
     lastSeen:{
       type:Date,

@@ -12,14 +12,14 @@ const registerLimiter = rateLimit({
 const loginLimiter = rateLimit({
   windowMs: 2 * 60 * 1000,
   max: 5,
-  keyGenerator: (req) => req.body.email || req.ip,
+  keyGenerator: (req) => req.body?.email || req.ip,
   message: "Too many login attempts for this email, please try again later.",
 });
 
 const forgotPasswordLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 3,
-  keyGenerator: (req) => req.body.email || req.ip,
+  keyGenerator: (req) => req.body?.email || req.ip,
   message: "Too many forgot password requests, please try again later.",
 });
 
@@ -34,6 +34,7 @@ const storyUploadLimiter = rateLimit({
 const otpLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 3,
+  keyGenerator: (req) => req.body?.email || req.ip,
   message: "Too many OTP requests , please try again later"
 })
 

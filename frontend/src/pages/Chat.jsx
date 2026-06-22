@@ -1,15 +1,15 @@
 import React, { useState, useContext, useEffect, useMemo } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import ChatBox from "../components/ChatBox";
+import ChatBox from "../components/chat/ChatBox";
 import { AuthContext } from "../context/AuthContext";
-import Spinner from "../components/Spinner";
+import Spinner from "../components/common/Spinner";
 import LoadingDots from "../components/common/LoadingDots"
 import { useParams } from "react-router-dom";
 import { handleError } from "../utils/errorHandler";
 import { useOnline } from "../context/OnlineStatusContext";
 import "../assets/css/Chat.css";
 import { toast } from "react-toastify";
-import GroupChat from "../components/GroupChat";
+import GroupChat from "../components/chat/GroupChat";
 import { groupFormData , getGroupData} from "../services/groupService";
 import { sidebarChatData } from "../services/chatService";
 

@@ -23,6 +23,8 @@ const followUser = async (req) => {
     following: targetUserId
   });
 
+
+
   if (alreadyFollowed) {
     return { status: 409, data: { message: "Already following." } };
   }
@@ -107,6 +109,8 @@ const followUser = async (req) => {
     follower: followerId,
     following: targetUserId
   });
+
+  
 
   // send notification
   if (fcmToken) {
