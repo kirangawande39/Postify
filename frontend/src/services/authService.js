@@ -3,6 +3,11 @@ import API from './api';
 export const userLoginVerify=()=>{
    return API.get('/api/auth/check');
 }
+
+export const getAuditLogs =()=>{
+return API.get('/api/audit');
+}
+
 export const loginUser = (data) => {
   return API.post(`/api/auth/login`, data)
 }

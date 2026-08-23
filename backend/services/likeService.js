@@ -1,13 +1,19 @@
 const Like = require("../models/Like");
 const Post = require("../models/Post");
 const User = require("../models/User");
-const {notificationQueue} = require("../queues/notificationQueue");
+const { notificationQueue } = require("../queues/notificationQueue");
+const emitter = require('../events/emitter');
 
 // like a post
 const likePost = async (req) => {
 
   const userId = req.user.id;
   const postId = req.params.postId;
+
+  // console.log("Like called")
+  // emitter.emit("postLiked", {
+  //   name: "kiran"
+  // });
 
   // check already liked or not
   const alreadyLiked = await Like.findOne({ user: userId, post: postId });
@@ -17,6 +23,7 @@ const likePost = async (req) => {
     error.statusCode = 400;
     throw error;
   }
+
 
   // create like
   await Like.create({ user: userId, post: postId });
@@ -34,6 +41,7 @@ const likePost = async (req) => {
   if (fcmToken) {
 
     const likedUserDetails = await User.findById(userId).select("username");
+
     const username = likedUserDetails.username;
 
     const title = "VibeNet";

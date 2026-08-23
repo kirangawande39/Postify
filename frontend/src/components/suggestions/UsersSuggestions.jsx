@@ -1,7 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-function UsersSuggestions({ setShowSuggestionModal, showAll, suggestions, role, user ,setShowAll }) {
+function UsersSuggestions({ setShowSuggestionModal, showAll, suggestions, role, user ,setShowAll , openStory, handleFollow , handleUnfollow, storyUserIds }) {
+
+
+
   return (
     <div>
       {role === "mobile" && <div className="vibenet-suggestion-modal-backdrop">
@@ -17,7 +20,7 @@ function UsersSuggestions({ setShowSuggestionModal, showAll, suggestions, role, 
                   <img
                     src={
                       sugg.profilePic?.url ||
-                      "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jzg"
+                      "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
                     }
                     alt={sugg.username}
                     className="vibenet-suggestion-avatar"
@@ -44,9 +47,9 @@ function UsersSuggestions({ setShowSuggestionModal, showAll, suggestions, role, 
       </div>}
 
 
+
       {role === "desktop" && <div className="vibenet-sidebar">
         <div className="vibenet-user-card">
-
           <img
             src={
               user?.profilePic?.url ||
@@ -55,28 +58,23 @@ function UsersSuggestions({ setShowSuggestionModal, showAll, suggestions, role, 
             alt={user.username}
             className="vibenet-user-avatar rounded-circle"
             onClick={(e) => {
-              if (storyUserIds.includes(user._id)) {
+              if (storyUserIds.includes(user._id || user.id)) {
                 e.preventDefault();
-                openStory(user._id);
+                openStory(user._id || user.id);
               }
             }}
           />
 
 
           <div className="vibenet-user-info">
-            <Link to={`/profile/${user._id}`} className="vibenet-username">
+            <Link to={`/profile/${user._id || user.id}`} className="vibenet-username">
               {user.username}
 
             </Link>
             <span className="vibenet-name">{user.name}</span>
           </div>
         </div>
-
-
-
-
-        <div className="vibenet-suggestions max-h-[500px] overflow-y-auto ">
-          <div className="vibenet-suggestions-header sticky top-0">
+           <div className="vibenet-suggestions-header sticky top-0">
             <span>Suggestions For You</span>
             {suggestions.length > 7 && (
               <button
@@ -89,6 +87,10 @@ function UsersSuggestions({ setShowSuggestionModal, showAll, suggestions, role, 
           </div>
 
 
+
+
+        <div className="vibenet-suggestions max-h-[500px] overflow-y-auto ">
+      
           {suggestions.length === 0 ? (
             <p className="vibenet-no-suggestions">No suggestions found</p>
           ) : (
@@ -132,7 +134,7 @@ function UsersSuggestions({ setShowSuggestionModal, showAll, suggestions, role, 
                 </span>
 
                 <span className="font-semibold text-gray-500">
-                  Made with ❤️
+                  Made with ❤️ Kiran
                 </span>
               </div>
             </>

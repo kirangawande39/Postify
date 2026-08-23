@@ -1,10 +1,12 @@
 const express = require("express");
 const { register, login, logout, checkEmail, forgotPassword, resetPassword, googleCallBack, check, sendOtp, verifyOtp } = require("../controllers/authController");
-const { registerLimiter, loginLimiter, otpLimiter,forgotPasswordLimiter } = require("../middlewares/rateLimit");
+const { registerLimiter, loginLimiter, otpLimiter, forgotPasswordLimiter } = require("../middlewares/rateLimit");
 const passport = require("passport");
 const { protect } = require("../middlewares/authMiddleware");
 const validate = require('../middlewares/validate')
-const { registerSchema, loginSchema , emailSchema  , resetPasswordSchema , verifyOTPSchema } = require('../validations/authValidation')
+const { registerSchema, loginSchema, emailSchema, resetPasswordSchema, verifyOTPSchema } = require('../validations/authValidation')
+
+const { createAuditLog } = require("../services/auditService");
 
 require("dotenv").config();
 const router = express.Router();
@@ -45,18 +47,28 @@ router.post("/register", registerLimiter, validate(registerSchema), register);
 
 router.post("/logout", protect, logout);
 
-router.post("/login", loginLimiter,validate(loginSchema), (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
+router.post("/login", loginLimiter, validate(loginSchema), (req, res, next)  => {
+  passport.authenticate("local", async (err, user, info) => {
     if (err) return next(err);
+
     if (!user) {
-      // login failed
-      // console.log("login failed")
+      await createAuditLog({
+        req,
+        module: "AUTH",
+        action: "FAILED_LOGIN",
+        actorEmail: req.body.email,
+        description: "Failed login attempt",
+        success: false,
+        metadata: {
+          reason: info?.message || "Invalid email or password",
+        },
+      });
+
       return res.status(401).json({
         success: false,
-        message: info.message || "Invalid email or password"
+        message: info.message || "Invalid email or password",
       });
     }
-
     // console.log(user)
     req.user = user;
     next();
@@ -69,7 +81,7 @@ router.post("/login", loginLimiter,validate(loginSchema), (req, res, next) => {
 // POST /api/auth/check-email
 router.post("/check-email", validate(emailSchema), checkEmail);
 
-router.post("/forgot-password",validate(emailSchema) ,  forgotPasswordLimiter, forgotPassword);
+router.post("/forgot-password", validate(emailSchema), forgotPasswordLimiter, forgotPassword);
 
 router.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 
@@ -86,7 +98,7 @@ router.get(
 );
 
 
-router.post("/send-otp", otpLimiter, validate(emailSchema),sendOtp)
-router.post("/verify-otp",validate(verifyOTPSchema), verifyOtp)
+router.post("/send-otp", otpLimiter, validate(emailSchema), sendOtp)
+router.post("/verify-otp", validate(verifyOTPSchema), verifyOtp)
 
 module.exports = router;

@@ -1,9 +1,19 @@
 const commentServices = require("../services/commentService");
-
+const { createAuditLog } = require("../services/auditService");
 // Add Comment
 const addComment = async (req, res, next) => {
   try {
     const result = await commentServices.addComment(req);
+    await createAuditLog({
+      req,
+      module: "COMMENT",
+      action: "CREATE",
+      targetId: result._id,
+      targetType: "Comment",
+      description: "User created a comment",
+      success: true,
+    });
+
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -25,6 +35,16 @@ const getComments = async (req, res, next) => {
 const deleteComment = async (req, res, next) => {
   try {
     const result = await commentServices.deleteComment(req);
+
+    await createAuditLog({
+      req,
+      module: "COMMENT",
+      action: "DELETE",
+      targetId: req.params.id,
+      targetType: "Comment",
+      description: "User deleted a comment",
+      success: true,
+    });
     res.status(200).json(result);
   } catch (error) {
     next(error);

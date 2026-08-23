@@ -10,6 +10,7 @@ const chatRoutes = require("./chatRoutes");
 const messageRoutes = require("./messageRoutes");
 const groupRoutes = require("./groupRoutes");
 const onlineStatusRoutes=require("./onlineStatusRoutes")
+const auditRoutes = require("./auditRoutes");
 
 const setupRoutes = (app) => {
   app.use("/api/auth", authRoutes);
@@ -24,6 +25,7 @@ const setupRoutes = (app) => {
   app.use("/api/messages", messageRoutes);
   app.use("/api/groups", groupRoutes);
   app.use("/api/online-status", onlineStatusRoutes)
+  app.use("/api/audit",auditRoutes)
 };
 
 module.exports = setupRoutes;

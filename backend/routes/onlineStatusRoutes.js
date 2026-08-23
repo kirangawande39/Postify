@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 
-const { onlineUsers, lastSeen } = require("../socket/socket");
+const { onlineUsers, lastSeen } = require("../sockets/socket");
 
 router.get("/", (req, res) => {
   res.json({

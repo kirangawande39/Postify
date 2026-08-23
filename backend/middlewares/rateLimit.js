@@ -9,11 +9,23 @@ const registerLimiter = rateLimit({
 });
 
 
+// const loginLimiter = rateLimit({
+
+//    windowMs: 60 * 1000,
+//   max: 1000,
+//   keyGenerator: (req) => req.body?.email || req.ip,
+//   message: "Too many login attempts for this email, please try again later.",
+// });
 const loginLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000,
-  max: 5,
-  keyGenerator: (req) => req.body?.email || req.ip,
-  message: "Too many login attempts for this email, please try again later.",
+
+  windowMs: 60 * 1000,
+
+  max: 10000,
+
+  keyGenerator: (req) => req.ip,
+
+  message: "Too many login attempts"
+
 });
 
 const forgotPasswordLimiter = rateLimit({

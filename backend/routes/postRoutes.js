@@ -1,19 +1,19 @@
 const express = require("express");
 const { createPost, getAllPosts, getPostsByUserId, deletePost } = require("../controllers/postController");
 const multer = require('multer');
-const { PostImageStorage } = require('../config/cloudConfig');  
+const { PostImageStorage } = require('../config/cloudConfig');
 const { protect } = require("../middlewares/authMiddleware");
 
-const storage=multer.memoryStorage();
+const storage = multer.memoryStorage();
 
-const upload = multer({ storage }); 
+const upload = multer({ storage });
 
 
 const router = express.Router();
 
 router.post("/:id", upload.single('postImage'), protect, createPost); // Image upload with Cloudinary
-router.get("/", getAllPosts);
-router.get("/:id", getPostsByUserId);
+router.get("/", protect, getAllPosts);
+router.get("/:id", protect, getPostsByUserId);
 router.delete("/:id", protect, deletePost);
 
 // router.post("/:id", upload.single('postImage'), (req, res) => {

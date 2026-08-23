@@ -83,7 +83,6 @@ const Home = () => {
       try {
 
         const res = await getSuggestion();
-
         setSuggestions(res.data);
       } catch (err) {
         console.error("Error fetching suggestions:", err);
@@ -532,7 +531,7 @@ const Home = () => {
             ) : posts.length > 0 ? (
               <>
                 {posts.map((post, index) => (
-                  <PostCard key={post._id} post={post} storyUserIds={storyUserIds} openStory={openStory} isSeen={isSeen} currentUserId={currentUserId} />
+                  <PostCard key={post?._id} post={post} storyUserIds={storyUserIds} openStory={openStory} isSeen={isSeen} currentUserId={currentUserId} />
                 ))}
 
                 {loadingMore && (
@@ -549,7 +548,7 @@ const Home = () => {
           
         </div>
 
-        <UsersSuggestions showAll={showAll} suggestions={suggestions} setShowSuggestionModal={setShowSuggestionModal} role={"desktop"} user={user} setShowAll={setShowAll} />
+        <UsersSuggestions showAll={showAll} suggestions={suggestions} setShowSuggestionModal={setShowSuggestionModal} role={"desktop"} user={user} setShowAll={setShowAll} openStory={openStory} handleFollow={handleFollow} handleUnfollow={handleUnfollow} storyUserIds={storyUserIds} />
             
       </div>
     </div>

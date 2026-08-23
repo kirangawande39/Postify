@@ -8,6 +8,17 @@ const Message = require("../models/Message")
 const createChat = async (req, res, next) => {
   try {
     const result = await chatServices.createChat(req);
+
+    await createAuditLog({
+      req,
+      module: "CHAT",
+      action: "CREATE",
+      targetId: result.data?._id,
+      targetType: "Chat",
+      description: "User created a chat",
+      success: true,
+    });
+
     res.status(result.status).json(result.data);
   } catch (err) {
     next(err);

@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Chat from "./pages/Chat";
+import AuditLogs from "./pages/AuditLogs";
 import EditProfile from "./pages/EditProfile";
 import Navbar from "./components/common/Navbar";
 import NotFound from "./pages/NotFound";
@@ -52,7 +53,7 @@ function App() {
   useEffect(() => {
     const userVerify = async () => {
       try {
-         const res = await userLoginVerify();
+        const res = await userLoginVerify();
         // console.log("check:", res.data);
         login(res.data.user);
         // toast.success(res.data.message || "Login Sucessfully..");
@@ -103,7 +104,7 @@ function App() {
   const fetchUnseenCounts = useCallback(async () => {
     try {
       const res = await messageUnseenCount();
-      
+
       setUnseenCounts(res.data.data);
       setIsPrivateStatus(res.data.privacyStatus);
     } catch (err) {
@@ -157,8 +158,8 @@ function App() {
 
       <Navbar totalUnseenCount={totalUnseenCount} isPrivateStatus={isPrivateStatus} />
       <SidebarNavbar isPrivateStatus={isPrivateStatus} />
-      <IncomingCallModal/>
-      
+      <IncomingCallModal />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/video-call" element={<VideoCall />} />
@@ -169,6 +170,7 @@ function App() {
         <Route path="/profile/:id/edit_profile" element={<EditProfile />} />
         <Route path="/search" element={<Search />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/audit" element={<AuditLogs user={user} />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 

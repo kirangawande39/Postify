@@ -1,9 +1,21 @@
-const {createPostService,getAllPostsService,getPostByIdService,getPostsByUserIdService,deletePostService} = require("../services/postService");
+const { createPostService, getAllPostsService, getPostByIdService, getPostsByUserIdService, deletePostService } = require("../services/postService");
+
+const { createAuditLog } = require("../services/auditService");
 
 // Create Post
 const createPost = async (req, res, next) => {
   try {
     const post = await createPostService(req);
+
+    await createAuditLog({
+      req,
+      module: "POST",
+      action: "CREATE",
+      targetId: post._id,
+      targetType: "Post",
+      description: "User created a post",
+      success: true,
+    });
 
     res.status(201).json({
       message: "Post created successfully",
@@ -41,7 +53,8 @@ const getPostById = async (req, res, next) => {
 // Get Posts By User
 const getPostsByUserId = async (req, res, next) => {
   try {
-    const posts = await getPostsByUserIdService(req.params.id);
+
+    const posts = await getPostsByUserIdService(req);
 
     if (!posts) {
       return res.status(201).json({
@@ -59,6 +72,16 @@ const getPostsByUserId = async (req, res, next) => {
 const deletePost = async (req, res, next) => {
   try {
     await deletePostService(req);
+
+    await createAuditLog({
+      req,
+      module: "POST",
+      action: "DELETE",
+      targetId: req.params.id,
+      targetType: "Post",
+      description: "User deleted a post",
+      success: true,
+    });
 
     res.json({
       message: "Post deleted successfully",

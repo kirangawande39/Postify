@@ -151,9 +151,9 @@ const CommentBox = ({ postId }) => {
                   <strong>{comment.user?.username || user.username}</strong>
                   <span className="comment-time">{dayjs(comment.createdAt).fromNow()}</span>
 
-                  {/* ✅ Show delete icon if logged-in user is the comment owner */}
+          
                   {comment.user?._id === user?.id && (
-                    <div className="comment-delete-btn">
+                    <div className="comment-delete-btn cursor-pointer">
                       <span onClick={() => handleCommentDelete(comment._id)}>
                         <MdDeleteForever />
                       </span>

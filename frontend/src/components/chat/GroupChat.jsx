@@ -10,7 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { MdArrowBack } from "react-icons/md";
 import Spinner from "../common/Spinner";
 import '../../assets/css/GroupChat.css'
-import { getGroupMessages ,sendGroupMessages } from "../../services/groupService";
+import LoadingDots from "../common/LoadingDots";
+import { getGroupMessages, sendGroupMessages } from "../../services/groupService";
 
 const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedSidebarChats }) => {
     const [showGroupDetails, setShowGroupDetails] = useState(false);
@@ -105,10 +106,14 @@ const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedSidebarChats }
     const startTyping = () => {
         if (!isTypingRef.current) {
             isTypingRef.current = true;
+            //  alert("typing start ")
+
+
+            console.log("User Profilepic:", user)
 
             socket.emit("group-typing", {
                 groupId,
-                user: { _id: user.id, username: user.username, icon: user.profilePic.url }
+                user: { _id: user.id, username: user.username, icon: user.profilePic?.url }
             });
         }
 
@@ -118,6 +123,7 @@ const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedSidebarChats }
             stopTyping();
         }, TYPING_TIMEOUT);
     };
+
 
     // Stop typing
     const stopTyping = () => {
@@ -155,11 +161,11 @@ const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedSidebarChats }
         e.preventDefault();
 
         try {
-            
+
             await sendGroupMessages({
-                    message: newGroupMessage,
-                    groupId
-                })
+                message: newGroupMessage,
+                groupId
+            })
 
             setNewGroupMessage("");
             stopTyping();
@@ -269,27 +275,33 @@ const GroupChat = ({ selectedGroup, onBack, isMobile, user, sortedSidebarChats }
 
                 {/* Typing Indicator */}
                 {typingUsers.length > 0 && (
-                    <div className="flex items-center gap-2 w-fit ml-3 mt-2 mb-3 bg-green-100 px-4 py-1.5 rounded-3xl shadow-sm">
-                        <img
-                            src={typingUsers[0].icon}
-                            alt="profile"
-                            className="w-10 h-10 rounded-full border border-green-300 object-cover"
-                        />
+                    <>
+                        <div className="flex items-center gap-2 w-fit ml-3 mt-2 mb-3 px-4 py-1.5 rounded-3xl shadow-sm">
+                            <img
+                                src={typingUsers[0].icon || "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"}
+                                alt="profile"
+                                className="w-10 h-10 rounded-full border border-green-300 object-cover"
+                            />
 
-                        {/* Profile Image */}
+                            {/* Profile Image */}
 
 
-                        {/* Typing Text */}
-                        <span className="font-semibold text-green-800 text-sm">
-                            {typingUsers.length === 1
-                                ? `${typingUsers[0].username} is typing...`
-                                : `${typingUsers[0].username} and ${typingUsers.length - 1} others are typing...`}
-                        </span>
+                            {/* Typing Text */}
+                            <span className="font-semibold text-green-800 text-sm">
+                                {typingUsers.length === 1
+                                    ? (<LoadingDots text={`${typingUsers[0].username} is typing`} textClassName="text-slate-700" />)
+                                    :
+                                    (
+                                        <LoadingDots text={`${typingUsers[0].username} and ${typingUsers.length - 1} others are typing`} textClassName="text-slate-700" />
+                                    )
+                                }
+                            </span>
 
-                    </div>
+                        </div>
+                        <div ref={messageEndRef}></div>
+                    </>
                 )}
 
-                <div ref={messageEndRef}></div>
             </div>
 
             {/* INPUT */}

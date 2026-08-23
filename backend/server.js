@@ -5,7 +5,8 @@ const { Server } = require("socket.io");
 
 const app = require("./app");
 const callDB = require("./config/db");
-const { initSocket } = require("./socket/socket");
+const { initSocket } = require("./sockets/index");
+// const { initSocket } = require("./sockets/socket");
 
 const setupRoutes = require('./routes');
 const notFound = require('./middlewares/notFound')
@@ -16,6 +17,7 @@ require("./workers/notificationWorker");
 require("./workers/otpWorker");
 require("./cron/storyCleanup");
 require('./workers/passwordForgotWorker');
+require('./listeners/like.listener')
 
 
 app.get('/', (req, res) => {
@@ -45,6 +47,8 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
+
+
 
 setupRoutes(app);
 

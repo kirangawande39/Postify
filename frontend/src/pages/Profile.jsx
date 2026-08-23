@@ -47,12 +47,8 @@ const Profile = () => {
   const [validated, setValidated] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [storyLoading, setStoryLoading] = useState(false);
-
-
   const [expandedPostId, setExpandedPostId] = useState(null);
-
   const [showFollowRequest, setShowFollowRequest] = useState(false);
-
   const [createPostStatus, setCreatePostStatus] = useState(false);
 
 
@@ -63,6 +59,7 @@ const Profile = () => {
     }
     handleCreatePost();
   };
+ 
 
 
   const [unfollowModal, setUnfollowModal] = useState({ show: false, user: null });
@@ -140,6 +137,11 @@ const Profile = () => {
     }
   }, [profileData, user]);
 
+  console.log("ProfileData:", profileData)
+  console.log("posts:",posts)
+  console.log("mutualUsernames:",mutualUsernames)
+
+
   useEffect(() => {
     if (!profileData || !profileData.followRequests || !user) return;
 
@@ -182,14 +184,11 @@ const Profile = () => {
 
       try {
 
-
         const response = await getProfileData(id)
 
-
-
-        setProfileData(response.data.user);
-        setMutualCount(response.data.mutualCount);
-        setMutualUserName(response.data.mutualList);
+        setProfileData(response.data?.user);
+        setMutualCount(response.data?.mutualCount);
+        setMutualUserName(response.data?.mutualList);
 
       } catch (err) {
         handleError(err);
@@ -200,14 +199,13 @@ const Profile = () => {
   }, [user]);
 
 
+  
   useEffect(() => {
     if (!user) return;
     if (!id) return;
 
     const fetchPostData = async () => {
       try {
-
-
         const res = await getPersonalPosts(id)
         setPosts(res.data.posts || []);
       } catch (err) {
@@ -278,6 +276,8 @@ const Profile = () => {
     }
   };
 
+ 
+  
   // const handleStory = () => {
   //   alert("Add your story");
   //   setStory(true);
@@ -357,7 +357,6 @@ const Profile = () => {
 
   const handleRemove = async (followerId) => {
 
-
     try {
 
 
@@ -430,6 +429,7 @@ const Profile = () => {
   };
 
 
+  // console.log("Posts:",posts)
   // const handleFollowRequest = async () => {
   //   alert("call followRequest")
   // }
@@ -791,7 +791,7 @@ const Profile = () => {
       )}
 
 
-      {/* Suggestion Boxes */}
+     
       <ProfileCompletion
         isOwnProfile={isOwnProfile}
         handleEdit={handleEdit}

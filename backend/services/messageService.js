@@ -52,6 +52,8 @@ const sendMessage = async (req) => {
     });
   }
 
+
+
   // bot reply logic
   const chat = await Chat.findById(chatId);
 
@@ -124,9 +126,10 @@ const getMessages = async (req) => {
 };
 
 
+
 // seen messages
 const seenMessages = async (req) => {
-
+  console.log("seen message callled")
   const { chatId } = req.params;
   const userId = req.user.id;
 
@@ -135,8 +138,19 @@ const seenMessages = async (req) => {
     { $set: { seen: true } }
   );
 
+
+  if (req.io) {
+    req.io.to(chatId)
+      .emit("message-seen", {
+        chatId,
+        userId
+      });
+  }
+
+
   return { message: "Messages marked as seen" };
 };
+
 
 
 // delete message

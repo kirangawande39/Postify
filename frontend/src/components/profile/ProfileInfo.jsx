@@ -50,10 +50,11 @@ function ProfileInfo({
                     <h3 className="text-lg sm:text-xl font-semibold">
                         {profileData.username}
                     </h3>
-                    <p className="text-gray-600 text-sm sm:text-base">
+                   
+                    <h6 className="text-gray-600 text-sm sm:text-base">
                         {profileData.bio || "No bio available"}
-                    </p>
-
+                    </h6>
+                  
                     {isOwnProfile ? (
                         <div className="flex items-center gap-3 mt-2">
                             <span
@@ -84,6 +85,7 @@ function ProfileInfo({
                 
                 ))}
                </span> */}
+               
                             {FollowBack && !isFollowing ?
                                 <button onClick={() => handleFollowBack(profileData._id)} className={`mt-2 px-4 py-1 text-sm font-bold rounded-full transition ${isFollowing
                                     ? "bg-gray-200 text-black border"

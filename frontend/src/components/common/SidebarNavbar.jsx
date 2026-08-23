@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 import { handleError } from "../../utils/errorHandler";
 import { userPrivacy } from "../../services/userService";
 import { logoutUser } from "../../services/authService";
+const VITE_AUDIT_ADMIN_USER_ID = import.meta.env.VITE_AUDIT_ADMIN_USER_ID;
 
 const SidebarNavbar = ({ isPrivateStatus }) => {
   const { user, logout } = useContext(AuthContext);
@@ -71,7 +72,7 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
   // Logout
   const handleLogout = async () => {
     try {
-      const res= await logoutUser();
+      const res = await logoutUser();
       toast.success(res.data.message);
 
       logout();
@@ -125,6 +126,20 @@ const SidebarNavbar = ({ isPrivateStatus }) => {
           <FaCommentDots className="me-2" />
           <span>Chat</span>
         </Link>
+
+        
+        {VITE_AUDIT_ADMIN_USER_ID === user.id
+
+          ??
+          <Link
+            to={`/audit`}
+            className="dropdown-item d-flex align-items-center"
+            onClick={() => setMenuOpen(false)}
+          >
+            <FaSearch className="me-2" /> Audits
+          </Link>
+
+        }
 
 
         <button

@@ -1,9 +1,19 @@
 const messageServices = require("../services/messageService");
-
+const { createAuditLog } = require("../services/auditService");
 // send message
 const sendMessage = async (req, res, next) => {
   try {
     const result = await messageServices.sendMessage(req);
+
+    await createAuditLog({
+      req,
+      module: "MESSAGE",
+      action: "SEND",
+      targetId: result._id,
+      targetType: "Message",
+      description: "User sent a message",
+      success: true,
+    });
     res.status(201).json(result);
   } catch (err) {
     next(err);
@@ -19,7 +29,7 @@ const getMessages = async (req, res, next) => {
       messages,
       hasMore
     });
-    
+
   } catch (err) {
     next(err);
   }
@@ -39,6 +49,15 @@ const seenMessages = async (req, res, next) => {
 const deleteMessage = async (req, res, next) => {
   try {
     const result = await messageServices.deleteMessage(req);
+    await createAuditLog({
+  req,
+  module: "MESSAGE",
+  action: "DELETE",
+  targetId: req.params.msgId,
+  targetType: "Message",
+  description: "User deleted a message",
+  success: true,
+});
     res.status(200).json(result);
   } catch (err) {
     next(err);
@@ -49,6 +68,15 @@ const deleteMessage = async (req, res, next) => {
 const sendImage = async (req, res, next) => {
   try {
     const result = await messageServices.sendImage(req);
+    await createAuditLog({
+  req,
+  module: "MESSAGE",
+  action: "SEND",
+  targetId: result._id,
+  targetType: "Message",
+  description: "User sent an image message",
+  success: true,
+});
     res.status(201).json(result);
   } catch (err) {
     next(err);

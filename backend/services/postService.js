@@ -1,5 +1,6 @@
 const Post = require("../models/Post");
 const { cloudinary } = require("../config/cloudConfig");
+const User = require("../models/User")
 
 // Create Post Service
 const sharp = require("sharp");
@@ -12,8 +13,7 @@ const createPostService =
 
     // console.log("createPostService called")
 
-    const { description } =
-      req.body;
+    const { description } = req.body;
 
     if (!req.file) {
 
@@ -23,17 +23,17 @@ const createPostService =
 
     }
 
+
     // Compress Post Image
-    const compressedBuffer =
-      await sharp(req.file.buffer)
+    const compressedBuffer = await sharp(req.file.buffer)
 
-        .resize(800)
+      .resize(800)
 
-        .webp({
-          quality: 70,
-        })
+      .webp({
+        quality: 70,
+      })
 
-        .toBuffer();
+      .toBuffer();
 
     // Upload Compressed Image
     const result =
@@ -135,7 +135,10 @@ const getAllPostsService = async (req) => {
 
 // Get Single Post
 const getPostByIdService = async (id) => {
+  const userId = req.user?.id;
   const post = await Post.findById(id);
+  // console.log("UserId:",userId)
+  // console.log("Profile user id:",id)
   if (!post) {
     const error = new Error("Post not found");
     error.statusCode = 404;
@@ -145,15 +148,31 @@ const getPostByIdService = async (id) => {
 };
 
 // Get Posts by User
-const getPostsByUserIdService = async (userId) => {
+const getPostsByUserIdService = async (req) => {
 
-  const posts = await Post.find({ user: userId }).sort({ createdAt: -1 })
+  let currentUserId = req.user?.id;
+  let profileUserId = req.params?.id;
+
+  let profileOwner = await User.findById(profileUserId).select('isPrivate followers');
+
+  if (!profileOwner) return null;
+  
+  // console.log("profileOwner::", profileOwner);
+
+  const canView = profileOwner === currentUserId || !profileOwner.isPrivate || profileOwner.followers.some((id) => id.toString() === currentUserId)
+
+  // console.log("canView",canView)
+  
+  if (!canView) return null;
+
+  const posts = await Post.find({ user: profileUserId }).sort({ createdAt: -1 })
 
   if (!posts.length) {
     return null;
   }
 
   return posts;
+
 };
 
 // Delete Post

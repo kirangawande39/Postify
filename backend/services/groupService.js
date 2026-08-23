@@ -201,7 +201,11 @@ const sendGroupMessage = async (req) => {
     });
 
     // emit realtime message to group
-    req.io.to(groupId).emit("receive-group-message", populatedMsg);
+    if (req.io) {
+      // console.log("send message call")
+      req.io.to(groupId).emit("receive-group-message", populatedMsg);
+    }
+
 
     // get all member tokens except sender
     const memberTokens = groupMembers?.members
@@ -223,7 +227,7 @@ const sendGroupMessage = async (req) => {
     const text = `on ${groupMembers?.name} : ${newMessage?.message}`;
 
     // send notification to all members
-    await Promise.all(
+    await Promise.allSettled(
       memberTokens.map((fcmToken) =>
         notificationQueue.add("send-group-notification", {
           fcmToken,

@@ -10,6 +10,7 @@ import {
   FaSignInAlt,
   FaUserPlus,
   FaCog,
+  FaFileAlt  
 } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import "../../assets/css/Navbar.css";
@@ -17,6 +18,9 @@ import { ToastContainer, toast, Slide } from "react-toastify";
 import { handleError } from "../../utils/errorHandler";
 import { logoutUser } from "../../services/authService";
 import { userPrivacy } from "../../services/userService";
+
+const VITE_AUDIT_ADMIN_USER_ID = import.meta.env.VITE_AUDIT_ADMIN_USER_ID;
+
 
 const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
   const { user, logout } = useContext(AuthContext);
@@ -27,8 +31,6 @@ const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
 
   const [showSetting, setShowSetting] = useState(false);
   const [isPrivate, setIsPrivate] = useState(isPrivateStatus);
-
-
 
 
   useEffect(() => {
@@ -42,7 +44,7 @@ const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
 
     try {
       const res = await logoutUser();
-     
+
       toast.success(res.data.message);
       logout();
       navigate("/");
@@ -142,6 +144,28 @@ const Navbar = ({ totalUnseenCount, isPrivateStatus }) => {
                   onClick={() => setMenuOpen(false)}
                 >
                   <FaSearch className="me-2" /> Search
+                </Link>
+
+                {VITE_AUDIT_ADMIN_USER_ID === user.id
+
+                  ??
+                  <Link
+                    to="/audit"
+                    className="dropdown-item d-flex align-items-center"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <FaFileAlt  className="me-2" />
+                    Audits
+                  </Link>
+
+                }
+
+                <Link
+                  to={`/audit`}
+                  className="dropdown-item d-flex align-items-center"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FaSearch className="me-2" /> Audits
                 </Link>
 
                 {/* Setting Toggle */}

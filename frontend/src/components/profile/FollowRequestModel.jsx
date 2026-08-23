@@ -3,6 +3,7 @@ import { FaTimes } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import { followDecline, followAccept } from "../../services/followService";
 
+
 const FollowRequestModel = ({ onClose, profileData, setProfileData, setFollowRequest }) => {
 
   const handleDecline = async (declineuserId) => {
@@ -47,68 +48,94 @@ const FollowRequestModel = ({ onClose, profileData, setProfileData, setFollowReq
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-96 max-w-full p-5 relative animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden animate-fadeIn">
 
+        <div className="relative border-b border-gray-200 px-5 py-4">
+          <h2 className="text-center text-lg font-semibold text-gray-900">
+            Follow Requests
+          </h2>
 
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-black transition"
-        >
-          <FaTimes size={18} />
-        </button>
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition"
+          >
+            <FaTimes className="text-gray-600" size={18} />
+          </button>
+        </div>
 
-        <h1 className="text-xl font-semibold text-gray-900 text-center mb-5">
-          Follow Requests
-        </h1>
-
-        <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
+        <div className="max-h-[500px] overflow-y-auto">
           {profileData.followRequests.length > 0 ? (
             profileData.followRequests.map((user, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:shadow-md transition"
+                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
               >
-
-
                 <div className="flex items-center gap-3">
                   <img
-                    src={user.user?.profilePic?.url || "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"}
+                    src={
+                      user.user?.profilePic?.url ||
+                      "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
+                    }
                     alt="Profile"
-                    className="w-12 h-12 rounded-full object-cover border"
+                    className="h-14 w-14 rounded-full object-cover border border-gray-200"
                   />
-                  <div className="flex flex-col">
-                    <span className="text-gray-900 font-medium">
-                      {user?.user?.username}
-                    </span>
 
-                    {/* <span className="text-xs text-gray-600 line-clamp-2 max-w-[140px]">
-                      {user.bio || "No bio available"}
-                    </span> */}
-                    <br />
-                    <br />
-                    {/* <span className="text-gray-900 font-medium">
-                      {user._id}
-                    </span> */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      {user.user?.username}
+                    </h3>
+
+                    <p className="text-xs text-gray-500 max-w-[170px] line-clamp-2 mt-1">
+                      {user.user?.bio || "No bio available"}
+                    </p>
                   </div>
                 </div>
 
-
                 <div className="flex flex-col gap-2">
-                  {/* <p>{user.user._id}</p> */}
-                  <button onClick={() => handleAccept(user.user?._id)} className="px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                    Accept
+                  <button
+                    onClick={() => handleAccept(user.user?._id)}
+                    className="bg-[#0095F6] hover:bg-[#1877F2] text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
+                  >
+                    Confirm
                   </button>
-                  {/* <p>{user.user._id}</p> */}
-                  <button onClick={() => handleDecline(user.user?._id)} className="px-3 py-1 text-xs bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition">
-                    Decline
+
+                  <button
+                    onClick={() => handleDecline(user.user?._id)}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold px-4 py-2 rounded-lg transition"
+                  >
+                    Delete
                   </button>
                 </div>
-
               </div>
             ))
           ) : (
-            <p className="text-center text-gray-500">No follow requests</p>
+            <div className="flex flex-col items-center justify-center py-20 px-6">
+              <div className="h-20 w-20 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-10 w-10 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-8 0v2m8 0H9m4-10a4 4 0 110-8 4 4 0 010 8z"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="mt-5 text-lg font-semibold text-gray-900">
+                No Follow Requests
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500 text-center max-w-xs">
+                When someone requests to follow you, you'll see them here.
+              </p>
+            </div>
           )}
         </div>
       </div>

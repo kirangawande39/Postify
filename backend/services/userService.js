@@ -6,57 +6,65 @@ const Chat = require('../models/Chat')
 
 
 const getUserProfile = async (currentUserId, profileUserId) => {
+    // console.log("getUserProfile service call")
 
-    const currentUser = await User.findById(currentUserId).select("following").lean();
-    if (!currentUser) {
-        throw new Error("Current user not found")
-    }
+    let [currentUser, profileUser] = await Promise.allSettled([
 
-    const currentFollowing = currentUser.following || [];
+        User.findById(currentUserId)
+            .select("following")
+            .lean(),
 
-    const profileUser = await User.findById(profileUserId)
-        .populate("followers", "username profilePic lastSeen")
-        .populate("following", "username profilePic lastSeen")
-        .populate("followRequests.user", "username profilePic lastSeen");
+        User.findById(profileUserId)
+            .select("username name profilePic bio followers following followRequests isPrivate")
+            .populate("followers", "username profilePic lastSeen")
+            .populate("following", "username profilePic lastSeen")
+            .populate("followRequests.user", "username profilePic lastSeen"),
+    ])
 
+    // console.log("currentUser", currentUser.value)
+    // console.log("profileUser" , profileUser.value)
+
+    currentUser = currentUser.value;
+    profileUser = profileUser.value;
 
 
     if (!profileUser) {
-        throw new Error("user not found")
+        throw new Error("User not found");
     }
 
+    if (!currentUser) {
+        throw new Error("Current user not found");
+    }
 
-    const profileFollowersIds = profileUser.followers.map(f => f._id.toString());
+    if (currentUserId === profileUserId) {
+        return { profileUser };
+    }
 
-    const mutualIds = profileFollowersIds.filter(id =>
-        currentFollowing.map(f => f.toString()).includes(id)
+    const followingSet = new Set(
+        currentUser.following.map(id => id.toString())
     );
 
-    const mutualUsers = profileUser.followers.filter(f =>
-        mutualIds.includes(f._id.toString())
-    );
+    const mutualList = profileUser.followers
+        .filter(user => followingSet.has(user._id.toString()))
+        .map(user => ({
+            username: user.username,
+            profilePic: user.profilePic?.url || null,
+        }));
 
-    const mutualList = mutualUsers.map(u => ({
-        username: u.username,
-        profilePic: u.profilePic?.url || null
-    }));
-
-
-    // console.log("mutualList ::",mutualList)
 
     return {
         profileUser,
         mutualList,
-    }
-
+    };
 
 
 };
 
 
 
-const updateUserProfile = async (req) => {
 
+
+const updateUserProfile = async (req) => {
 
     const userId = req.params.id;
     const { name, bio } = req.body;
@@ -65,15 +73,17 @@ const updateUserProfile = async (req) => {
         throw { status: 403, message: "Not Allowed!" };
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select("bio name");
+
+    // console.log("User:",user)
 
     if (user) {
-        user.bio = name || user.bio;
-        user.name = bio || user.name;
-
+        user.bio = bio || user.bio;
+        user.name = name || user.name;
         await user.save();
 
         const updatedUser = await User.findById(user._id).select('name bio');
+
 
         return {
             message: "Profile updated successfully",
@@ -125,6 +135,14 @@ const getSuggestedUsers = async (req) => {
     }
 
     const following = currentUser.following || [];
+    const followers = currentUser.followers || [];
+    const followRequests = currentUser.followRequests.map((followReq) => followReq.user) || [];
+
+
+
+    // console.log("following::" , following)
+    // console.log("followers::" , followers)
+    // console.log("followRequests::" , followRequests)
 
     // console.log("Following IN Suggestion page:", following)
 
@@ -132,7 +150,7 @@ const getSuggestedUsers = async (req) => {
         {
             $match: {
                 _id: {
-                    $nin: [currentUser._id, ...following]
+                    $nin: [currentUser._id, ...following, ...followers, ...followRequests]
                 }
             }
         },
@@ -167,7 +185,7 @@ const getSuggestedUsers = async (req) => {
                 username: 1,
                 name: 1,
                 profilePic: 1,
-                mutualCount: { $size:"$mutualIds" },
+                mutualCount: { $size: "$mutualIds" },
                 mutualUsernames: {
                     $map: {
                         input: "$mutualUsers",
@@ -183,11 +201,11 @@ const getSuggestedUsers = async (req) => {
                 popularity: -1
             }
         },
-        { $limit: 7 }
+        { $limit: 20 }
     ];
 
     return await User.aggregate(pipeline);
-    
+
 };
 
 // const uploadProfilePic = async (req) => {

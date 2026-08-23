@@ -13,6 +13,7 @@ import { useCall } from "../../context/CallContext";
 import { createOrFetchChat, sendMessage, fileChange, getChatMessages, markSeenChatMessages } from "../../services/chatService";
 
 
+
 const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack }) => {
 
   const { startOutgoingCall } = useCall();
@@ -152,13 +153,15 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
   const loadOlder = () => {
     if (!hasMore) return;
     const nextPage = page + 1;
-    setPage(nextPage);
+    setPage(nextPage)
     fetchMessages(nextPage);
   }
 
 
 
   const hasMarkedSeen = useRef(false);
+
+  
 
   useEffect(() => {
     const updateMarkSeen = async () => {
@@ -172,7 +175,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
       hasMarkedSeen.current = true;
 
-
+     
       await markSeenChatMessages(chatId);
 
       socket.emit("mark-seen", { chatId, userId: user.id });
@@ -254,6 +257,7 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
 
       const res = await sendMessage({ chatId, receiverId, text: newMessage })
 
+  
       // console.log("msg res :", res.data)
       setNewMessage("");
 
@@ -262,22 +266,14 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
         ...res.data,
         sender: { _id: user.id, profilePic: user.profilePic },
       };
-
       // onLastMessageUpdate(newMessage);
       // setMessages((prev) => [...prev, sentMessage]);
-
-
-
-      socket.emit("send-message", {
-        chatId,
-        message: sentMessage,
-      });
-
       socket.emit("stop-typing", {
         chatId,
         senderId: user.id,
         receiverId: selectedUser._id,
       });
+      
     } catch (err) {
       handleError(err);
     }
@@ -314,6 +310,8 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
   };
 
 
+
+
   useEffect(() => {
     if (!socket) return;
 
@@ -329,38 +327,85 @@ const ChatBox = ({ user, selectedUser, localUser, onLastMessageUpdate, onBack })
   }, [socket]);
 
 
+  // useEffect(() => {
+  //   const handleReceive = (msg) => {
+  //     // console.log("Message received via socket:", msg);
+  //     // console.log("Current Chat ID:", chatId)
+
+  //     if (!msg.sender || !msg.sender._id) {
+  //       msg.sender = { _id: msg.senderId };
+  //     }
+
+  //     const incomingChatId = msg.chatId?._id || msg.chatId;
+
+  //     if (incomingChatId === chatId) {
+  //       setMessages((prev) => {
+  //         //  Check if this message already exists
+  //         const exists = prev.some((m) => m._id === msg._id);
+  //         if (!exists && msg._id) {
+  //           return [...prev, msg];
+  //         }
+  //         return prev;
+  //       });
+
+  //       //  Scroll to bottom (optional)
+  //       setTimeout(() => {
+  //         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  //       }, 100);
+  //     }
+  //   };
+
+  //   socket.on("receive-message", handleReceive);
+  //   return () => socket.off("receive-message", handleReceive);
+  // }, [chatId]);
+
   useEffect(() => {
-    const handleReceive = (msg) => {
-      // console.log("Message received via socket:", msg);
-      // console.log("Current Chat ID:", chatId)
 
-      if (!msg.sender || !msg.sender._id) {
-        msg.sender = { _id: msg.senderId };
+  const handleReceive = async (msg) => {
+
+    if (!msg.sender || !msg.sender._id) {
+      msg.sender = { _id: msg.senderId };
+    }
+
+    const incomingChatId = msg.chatId?._id || msg.chatId;
+
+    if (incomingChatId === chatId) {
+
+      setMessages((prev) => {
+
+        const exists = prev.some((m) => m._id === msg._id);
+
+        if (!exists && msg._id) {
+          return [...prev, msg];
+        }
+
+        return prev;
+      });
+
+      // Mark message as seen only if receiver gets the message
+      if (msg.sender._id !== user.id) {
+        try {
+          await markSeenChatMessages(chatId);
+        } catch (err) {
+          console.error("Mark seen failed:", err);
+        }
       }
 
-      const incomingChatId = msg.chatId?._id || msg.chatId;
-
-      if (incomingChatId === chatId) {
-        setMessages((prev) => {
-          //  Check if this message already exists
-          const exists = prev.some((m) => m._id === msg._id);
-          if (!exists && msg._id) {
-            return [...prev, msg];
-          }
-          return prev;
+      setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({
+          behavior: "smooth",
         });
+      }, 100);
+    }
+  };
 
-        //  Scroll to bottom (optional)
-        setTimeout(() => {
-          chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
-      }
-    };
+  socket.on("receive-message", handleReceive);
 
-    socket.on("receive-message", handleReceive);
-    return () => socket.off("receive-message", handleReceive);
-  }, [chatId]);
+  return () => {
+    socket.off("receive-message", handleReceive);
+  };
 
+}, [chatId, user?.id]);
 
 
 
